@@ -78,14 +78,12 @@ def startServer():
 
 # If the server is currently running, kill it.
 def stopServer():
-  ps = subprocess.Popen(["ps", "aux"], stdout=subprocess.PIPE)
-  # Helps to not grep the grep process.
-  grepable = "[{}]{}".format(CURRENT_DEPLOY_DIR[0], CURRENT_DEPLOY_DIR[1:])
+  pid_f = os.path.join(CURRENT_DEPLOY_DIR, "RUNNING_PID")
   try:
-    out = subprocess.check_output(["grep", grepable], stdin=ps.stdout)
-    pid = int(out.split()[1])
+    with open(pid_f, 'r') as pid_ref:
+      pid = int(readline(pid_ref).strip())
     os.kill(pid, signal.SIGTERM)
-  except subprocess.CalledProcessError as e:
+  except IOError as e:
     return
 
 
