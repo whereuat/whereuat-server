@@ -73,7 +73,11 @@ def unzip(zf, dest):
 # Start a new process running the server.
 def startServer():
   exec_path = os.path.join(CURRENT_DEPLOY_DIR, "bin", "whereuat-server")
-  subprocess.Popen([exec_path])
+  try:
+    with open(os.path.join("/dev", "null") as dev_null:
+      subprocess.Popen([exec_path], stdout=dev_null, stderr=dev_null)
+  except IOSError as e:
+    return
 
 
 # If the server is currently running, kill it.
