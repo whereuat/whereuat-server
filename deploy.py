@@ -91,9 +91,9 @@ def main(zf):
   new_path = makeNewDir()
   shutil.copy(zf, new_path)
   removeBackup()
+  stopServer()
   makeCurrentDeployBackup()
   unzip(zf, CURRENT_DEPLOY_DIR)
-  stopServer()
   startServer()
 
 if __name__ == "__main__":
