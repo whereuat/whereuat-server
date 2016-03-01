@@ -8,8 +8,7 @@ import sys
 import time
 import zipfile
 
-DEPLOY_DIR = "/home/julius/server-snapshots"
-# DEPLOY_DIR = "/home/server-snapshots"
+DEPLOY_DIR = "/home/server-snapshots"
 CURRENT_DEPLOY_DIR = os.path.join(DEPLOY_DIR, "whereuat-server")
 BACKUP_DIR = os.path.join(DEPLOY_DIR, "_whereuat-server")
 
