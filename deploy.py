@@ -81,7 +81,7 @@ def stopServer():
   pid_f = os.path.join(CURRENT_DEPLOY_DIR, "RUNNING_PID")
   try:
     with open(pid_f, 'r') as pid_ref:
-      pid = int(readline(pid_ref).strip())
+      pid = int(pid_ref.readline().strip())
     os.kill(pid, signal.SIGTERM)
   except IOError as e:
     return
