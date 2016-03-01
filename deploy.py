@@ -43,28 +43,34 @@ def makeCurrentDeployBackup():
 
 # Unzip _zf_ and put it in _dest_.
 def unzip(zf, dest):
+  # Create the temp directory
+  try:
+    os.mkdir(TMP_DIR)
+  except OSError as e:
+    pass
+
+  # Extract the zip file
   with zipfile.ZipFile(zf, 'r') as zip_ref:
-    # Create and extract zip file to temp directory
-    try:
-      os.mkdir(TMP_DIR)
-    except OSError as e:
-      pass
     zip_ref.extractall(TMP_DIR)
-    # Rename the extracted directory to be the current deploy directory
-    zip_name = zf.replace(".zip", "").split('/')[-1]
-    zip_dir = os.path.join(TMP_DIR, zip_name) 
-    shutil.move(zip_dir, CURRENT_DEPLOY_DIR)
-    # Remove temp directory
-    try:
-      shutil.rmtree(TMP_DIR)
-    except OSError as e:
+
+  # Rename the extracted directory to be the current deploy directory
+  zip_name = zf.replace(".zip", "").split('/')[-1]
+  zip_dir = os.path.join(TMP_DIR, zip_name) 
+  shutil.move(zip_dir, CURRENT_DEPLOY_DIR)
+
+  # Remove temp directory
+  try:
+    shutil.rmtree(TMP_DIR)
+  except OSError as e:
+    if e.errno = 2:
       pass
-    # Change the permissions on the unzipped files.
-    for root, dirs, files in os.walk(CURRENT_DEPLOY_DIR):
-      for d in dirs:
-        os.chmod(os.path.join(root, d), 0777)
-      for f in files:
-        os.chmod(os.path.join(root, f), 0777)
+
+  # Change the permissions on the unzipped files.
+  for root, dirs, files in os.walk(CURRENT_DEPLOY_DIR):
+    for d in dirs:
+      os.chmod(os.path.join(root, d), 0777)
+    for f in files:
+      os.chmod(os.path.join(root, f), 0777)
 
 
 # Start a new process running the server.
@@ -96,6 +102,7 @@ def main(zf):
   makeCurrentDeployBackup()
   unzip(zf, CURRENT_DEPLOY_DIR)
   startServer()
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
