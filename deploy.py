@@ -76,8 +76,18 @@ def unzip(zf, dest):
 # Start a new process running the server.
 def startServer():
   exec_path = os.path.join(CURRENT_DEPLOY_DIR, "bin", "whereuat-server")
-  with open(os.path.join("/dev", "null")) as dev_null:
-    subprocess.Popen([exec_path], stdout=dev_null, stderr=dev_null)
+  try:
+    with open(os.path.join("/dev", "null")) as dev_null:
+      try:
+        subprocess.Popen([exec_path], stdout=dev_null, stderr=dev_null)
+      except OSError as e:
+        # Error in Popen
+        print "ERROR: Server process could not be started"
+        exit(1)
+  except IOError as e:
+    # Error in opening /dev/null
+    print "ERROR: Unable to open /dev/null"
+    exit(1)
 
 
 # If the server is currently running, kill it.
@@ -88,6 +98,7 @@ def stopServer():
       pid = int(pid_ref.readline().strip())
     os.kill(pid, signal.SIGTERM)
   except IOError as e:
+    # If pid file does not exist, return
     return
 
 
