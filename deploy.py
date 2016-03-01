@@ -11,6 +11,7 @@ import zipfile
 DEPLOY_DIR = "/home/server-snapshots"
 CURRENT_DEPLOY_DIR = os.path.join(DEPLOY_DIR, "whereuat-server")
 BACKUP_DIR = os.path.join(DEPLOY_DIR, "_whereuat-server")
+TMP_DIR = os.path.join(DEPLOY_DIR, "tmp")
 
 
 # Make a new directory in the deploying directory and return the path of the new
@@ -46,11 +47,21 @@ def makeCurrentDeployBackup():
 # Unzip _zf_ and put it in _dest_.
 def unzip(zf, dest):
   with open(zf) as zipped, zipfile.ZipFile(zf, 'r') as zip_ref:
-    zip_ref.extractall(DEPLOY_DIR)
+    # Create and extract zip file to temp directory
+    try:
+      os.mkdir(TMP_DIR)
+    except OSError as e:
+      pass
+    zip_ref.extractall(TMP_DIR)
     # Rename the extracted directory to be the current deploy directory
     zip_name = zf.replace(".zip", "").split('/')[-1]
-    zip_dir = os.path.join(DEPLOY_DIR, zip_name)
+    zip_dir = os.path.join(TMP_DIR, zip_name) 
     shutil.move(zip_dir, CURRENT_DEPLOY_DIR)
+    # Remove temp directory
+    try:
+      shutil.rmtree(TMP_DIR)
+    except OSError as e:
+      pass
     # Change the permissions on the unzipped files.
     for root, dirs, files in os.walk(CURRENT_DEPLOY_DIR):
       for d in dirs:
