@@ -46,7 +46,7 @@ def makeCurrentDeployBackup():
 
 # Unzip _zf_ and put it in _dest_.
 def unzip(zf, dest):
-  with open(zf) as zipped, zipfile.ZipFile(zf, 'r') as zip_ref:
+  with zipfile.ZipFile(zf, 'r') as zip_ref:
     # Create and extract zip file to temp directory
     try:
       os.mkdir(TMP_DIR)
