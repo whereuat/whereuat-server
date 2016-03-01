@@ -28,10 +28,7 @@ def removeBackup():
   try:
     shutil.rmtree(BACKUP_DIR)
   except OSError as e:
-    if e.errno == 2:
-      print "Backup directory {} doesn't exist. Creating it now.".format(
-        BACKUP_DIR)
-      os.mkdir(BACKUP_DIR)
+    return
 
 
 # Rename the current deploy to be the backup.
@@ -74,7 +71,7 @@ def unzip(zf, dest):
 def startServer():
   exec_path = os.path.join(CURRENT_DEPLOY_DIR, "bin", "whereuat-server")
   try:
-    with open(os.path.join("/dev", "null") as dev_null:
+    with open(os.path.join("/dev", "null")) as dev_null:
       subprocess.Popen([exec_path], stdout=dev_null, stderr=dev_null)
   except IOSError as e:
     return
