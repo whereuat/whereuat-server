@@ -7,18 +7,19 @@ import com.mongodb.casbah.Imports._
 class Application extends Controller {
 
   def index = Action {
-    Ok(views.html.index("Your application is ready!"))
+    Ok(views.html.index())
   }
 
-  def read = Action {
-    val mongoClient = MongoClient("localhost", 27017)
-    val db = mongoClient("test")
-    val coll = db("test")
+  def newAccount = Action {
+    Ok(views.html.newaccount())
+  }
 
-    val docs = coll.find()
-    val list = docs.toList
+  def at = Action {
+    Ok(views.html.at())
+  }
 
-    Ok(views.html.read(list))
+  def where = Action {
+    Ok(views.html.where())
   }
 
 }
