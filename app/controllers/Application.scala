@@ -7,7 +7,7 @@ import com.mongodb.casbah.Imports._
 class Application extends Controller {
 
   def index = Action {
-    Ok(views.html.index("Your application is ready!"))
+    Ok(views.html.index())
   }
 
   def read = Action {
