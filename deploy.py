@@ -20,9 +20,8 @@ def makeNewDir():
   try:
     os.mkdir(DEPLOY_DIR)
   except OSError as e:
-    if e.errno == 17:
-      # If DEPLOY_DIR already exists
-      pass
+    # If DEPLOY_DIR already exists
+    pass
   new_dir = "{:0.0f}".format(time.time())
   new_path = os.path.join(DEPLOY_DIR, new_dir)
   os.mkdir(new_path)
@@ -68,8 +67,8 @@ def unzip(zf, dest):
   try:
     shutil.rmtree(TMP_DIR)
   except OSError as e:
-    if e.errno = 2:
-      pass
+    # If TMP_DIR already does not exist
+    pass
 
   # Change the permissions on the unzipped files.
   for root, dirs, files in os.walk(CURRENT_DEPLOY_DIR):
