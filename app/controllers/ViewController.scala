@@ -2,7 +2,6 @@ package controllers
 
 import play.api._
 import play.api.mvc._
-import com.mongodb.casbah.Imports._
 
 class ViewController extends Controller {
 
