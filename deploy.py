@@ -17,6 +17,12 @@ TMP_DIR = os.path.join(DEPLOY_DIR, "tmp")
 # Make a new directory in the deploying directory and return the path of the new
 # directory.
 def makeNewDir():
+  try:
+    os.mkdir(DEPLOY_DIR)
+  except OSError as e:
+    if e.errno == 17:
+      # If DEPLOY_DIR already exists
+      pass
   new_dir = "{:0.0f}".format(time.time())
   new_path = os.path.join(DEPLOY_DIR, new_dir)
   os.mkdir(new_path)
