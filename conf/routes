@@ -13,5 +13,14 @@ GET     /account/new                controllers.ViewController.newAccount
 GET     /at                         controllers.ViewController.at
 GET     /where                      controllers.ViewController.where
 
+# Account creation
+POST    /account/new                controllers.Whereuat.createAccount
+
+# @request
+POST    /where                      controllers.Whereuat.request
+
+# @response
+POST    /at                         controllers.Whereuat.respond
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
