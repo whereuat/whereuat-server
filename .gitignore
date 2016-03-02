@@ -1,6 +1,9 @@
 *.class
 *.log
 
+# VIM .swp files
+*.swp
+
 # sbt specific
 .cache
 .history
