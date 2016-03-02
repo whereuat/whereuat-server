@@ -3,15 +3,15 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
+GET     /                           controllers.ViewController.index
 
 # Casbah reference route
 GET     /read                       controllers.Application.read
 
 # Dummy routes
-GET     /account/new                controllers.Application.newAccount
-GET     /at                         controllers.Application.at
-GET     /where                      controllers.Application.where
+GET     /account/new                controllers.ViewController.newAccount
+GET     /at                         controllers.ViewController.at
+GET     /where                      controllers.ViewController.where
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

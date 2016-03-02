@@ -4,7 +4,7 @@ import play.api._
 import play.api.mvc._
 import com.mongodb.casbah.Imports._
 
-class Application extends Controller {
+class ViewController extends Controller {
 
   def read = Action {
     val mongoClient = MongoClient("localhost", 27017)
