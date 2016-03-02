@@ -5,6 +5,9 @@
 # Home page
 GET     /                           controllers.Application.index
 
+# Casbah reference route
+GET     /read                       controllers.Application.read
+
 # Dummy routes
 GET     /account/new                controllers.Application.newAccount
 GET     /at                         controllers.Application.at
