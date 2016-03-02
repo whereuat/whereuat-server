@@ -21,4 +21,16 @@ class Application extends Controller {
     Ok(views.html.read(list))
   }
 
+  def newAccount = Action {
+    Ok(views.html.newaccount())
+  }
+
+  def at = Action {
+    Ok(views.html.at())
+  }
+
+  def where = Action {
+    Ok(views.html.where())
+  }
+
 }
