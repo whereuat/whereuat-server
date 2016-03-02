@@ -7,7 +7,7 @@ import com.mongodb.casbah.Imports._
 class Application extends Controller {
 
   def index = Action {
-    Ok(views.html.index("Your application is ready!"))
+    Ok(views.html.index())
   }
 
   def read = Action {
@@ -19,6 +19,18 @@ class Application extends Controller {
     val list = docs.toList
 
     Ok(views.html.read(list))
+  }
+
+  def newAccount = Action {
+    Ok(views.html.newaccount())
+  }
+
+  def at = Action {
+    Ok(views.html.at())
+  }
+
+  def where = Action {
+    Ok(views.html.where())
   }
 
 }
