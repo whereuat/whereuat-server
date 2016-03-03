@@ -2,17 +2,6 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET     /                           controllers.ViewController.index
-
-# Casbah reference route
-GET     /read                       controllers.Application.read
-
-# Dummy routes
-GET     /account/new                controllers.ViewController.newAccount
-GET     /at                         controllers.ViewController.at
-GET     /where                      controllers.ViewController.where
-
 # Account creation
 POST    /account/new                controllers.Whereuat.createAccount
 
