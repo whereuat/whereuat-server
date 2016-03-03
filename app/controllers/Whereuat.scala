@@ -64,7 +64,7 @@ class Whereuat extends Controller {
         Ok("Requested account's phone number: " + phone + "\n\n" + 
            "Test directory query:\n" + serialize(list))
     }.recoverTotal {
-      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
+      e => BadRequest("ERROR: " + JsError.toJson(e))
     }
   }
 
@@ -83,7 +83,7 @@ class Whereuat extends Controller {
            "Created account's verification code: " + vcode + "\n\n" + 
            "Test directory query:\n" + serialize(list))
     }.recoverTotal {
-      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
+      e => BadRequest("ERROR: " + JsError.toJson(e))
     }
   }
 
@@ -101,7 +101,7 @@ class Whereuat extends Controller {
            "@ Request's to phone number: " + to + "\n\n" +
            "Test directory query:\n" + serialize(list))
     }.recoverTotal {
-      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
+      e => BadRequest("ERROR: " + JsError.toJson(e))
     }
   }
 
@@ -123,7 +123,7 @@ class Whereuat extends Controller {
            }.mkString("\n")+ "\n\n" +
            "Test directory query:\n" + serialize(list))
     }.recoverTotal {
-      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
+      e => BadRequest("ERROR: " + JsError.toJson(e))
     }
   }
 
