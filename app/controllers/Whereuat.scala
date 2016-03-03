@@ -52,7 +52,7 @@ class Whereuat extends Controller {
 
   // Route actions
   def requestAccount = Action(parse.json) { request =>
-    request.body.validate[String](requestReads).map {
+    request.body.validate(requestReads).map {
       case (phone) =>
         val mongoClient = MongoClient("localhost", 27017)
         val db = mongoClient("test")
