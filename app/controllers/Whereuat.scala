@@ -38,13 +38,13 @@ class Whereuat extends Controller {
   ) tupled
 
   val whereReads : Reads[(String, String)] = (
-    (JsPath \ "from" \ "phone-#").read[String] and
-    (JsPath \ "to" \ "phone-#").read[String]
+    (JsPath \ "from").read[String] and
+    (JsPath \ "to").read[String]
   ) tupled
 
   val atReads : Reads[(String, String, Location, Seq[KeyLocation])] = (
-    (JsPath \ "from" \ "phone-#").read[String] and
-    (JsPath \ "to" \ "phone-#").read[String] and
+    (JsPath \ "from").read[String] and
+    (JsPath \ "to").read[String] and
     (JsPath \ "location").read[Location] and
     (JsPath \ "key-locations").read[Seq[KeyLocation]]
   ) tupled
