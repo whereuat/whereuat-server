@@ -87,7 +87,7 @@ class Whereuat extends Controller {
     }
   }
 
-  def request = Action {
+  def atRequest = Action {
     val mongoClient = MongoClient("localhost", 27017)
     val db = mongoClient("test")
     val coll = db("test")
@@ -98,7 +98,7 @@ class Whereuat extends Controller {
     Ok(serialize(list))
   }
 
-  def respond = Action {
+  def atRespond = Action {
     val mongoClient = MongoClient("localhost", 27017)
     val db = mongoClient("test")
     val coll = db("test")
