@@ -87,15 +87,22 @@ class Whereuat extends Controller {
     }
   }
 
-  def atRequest = Action {
-    val mongoClient = MongoClient("localhost", 27017)
-    val db = mongoClient("test")
-    val coll = db("test")
+  def atRequest = Action(parse.json) { request =>
+    request.body.validate(whereReads).map {
+      case (from, to) =>
+        val mongoClient = MongoClient("localhost", 27017)
+        val db = mongoClient("test")
+        val coll = db("test")
 
-    val docs = coll.find()
-    val list = docs.toList
+        val docs = coll.find()
+        val list = docs.toList
 
-    Ok(serialize(list))
+        Ok("@ Request's from phone number: " + from + "\n" +
+           "@ Request's to phone number: " + to + "\n\n" +
+           "Test directory query:\n" + serialize(list))
+    }.recoverTotal {
+      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
+    }
   }
 
   def atRespond = Action {
