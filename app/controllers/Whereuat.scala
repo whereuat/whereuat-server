@@ -8,7 +8,8 @@ import com.mongodb.util.JSON._
 class Whereuat extends Controller {
 
   def requestAccount = Action {
-    val mongoClient = mongoClient("test")
+    val mongoClient = MongoClient("localhost", 27017)
+    val db = mongoClient("test")
     val coll = db("test")
 
     val docs = coll.find()
