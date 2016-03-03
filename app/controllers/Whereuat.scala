@@ -49,6 +49,7 @@ class Whereuat extends Controller {
     (JsPath \ "key-locations").read[Seq[KeyLocation]]
   ) tupled
 
+
   // Route actions
   def requestAccount = Action(parse.json) { request =>
     request.body.validate[String](requestReads).map {
@@ -61,21 +62,29 @@ class Whereuat extends Controller {
         val list = docs.toList
 
         Ok("Requested account's phone number: " + phone + "\n\n" + 
-           "Test directory query:" + "\n" + serialize(list))
+           "Test directory query:\n" + serialize(list))
     }.recoverTotal {
-      e => BadRequest("ERROR: "+ JsError.toFlatJson(e))
+      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
     }
   }
 
   def createAccount = Action(parse.json) { request =>
-    val mongoClient = MongoClient("localhost", 27017)
-    val db = mongoClient("test")
-    val coll = db("test")
+    request.body.validate(createReads).map {
+      case (phone, gcm, vcode) =>
+        val mongoClient = MongoClient("localhost", 27017)
+        val db = mongoClient("test")
+        val coll = db("test")
 
-    val docs = coll.find()
-    val list = docs.toList
+        val docs = coll.find()
+        val list = docs.toList
 
-    Ok(serialize(list))
+        Ok("Created account's phone number: " + phone + "\n" +
+           "Created account's GCM ID: " + gcm + "\n" +
+           "Created account's verification code: " + vcode + "\n\n" + 
+           "Test directory query:\n" + serialize(list))
+    }.recoverTotal {
+      e => BadRequest("ERROR: " + JsError.toFlatJson(e))
+    }
   }
 
   def request = Action {
