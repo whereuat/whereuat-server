@@ -13,12 +13,6 @@ class Whereuat extends Controller {
   case class Location(latitude: Double, longitude: Double)
   case class KeyLocation(name: String, location: Location)
 
-  // Case classes for payloads
-  case class RequestPayload(phone: String)
-  case class CreatePayload(phone: String, gcm: String, vcode: String)
-  case class WherePayload(from: String, to: String)
-  case class AtPayload(from: String, to: String, location: Location, key_locations: Seq[KeyLocation])
-
 
   // Implicit Reads for case classes
   implicit val locationReads : Reads[Location] = (
