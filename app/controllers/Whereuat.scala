@@ -27,32 +27,35 @@ class Whereuat extends Controller {
 
 
   // Explicit Reads
-  val phoneReads : Reads[String] = (
+  val requestReads : Reads[String] = (
     (JsPath \ "phone-#").read[String]
   )
 
-  val gcmReads : Reads[String] = (
-    (JsPath \ "gcm-id").read[String]
-  )
-
-  val verifyReads : Reads[String] = (
+  val createReads : Reads[(String, String, String)] = (
+    (JsPath \ "phone-#").read[String] and
+    (JsPath \ "gcm-id").read[String] and
     (JsPath \ "verification-code").read[String]
   )
 
+  // Route actions
+  def requestAccount = Action(parse.json) { request =>
+    request.body.validate[String](requestReads).map {
+      case (phone) =>
+        val mongoClient = MongoClient("localhost", 27017)
+        val db = mongoClient("test")
+        val coll = db("test")
 
-  // Request actions
-  def requestAccount = Action {
-    val mongoClient = MongoClient("localhost", 27017)
-    val db = mongoClient("test")
-    val coll = db("test")
+        val docs = coll.find()
+        val list = docs.toList
 
-    val docs = coll.find()
-    val list = docs.toList
-
-    Ok(serialize(list))
+        Ok("Requested account's phone number: " + phone + "\n\n" + 
+           "Test directory query:" + "\n" + serialize(list))
+    }.recoverTotal {
+      e => BadRequest("ERROR: "+ JsError.toFlatJson(e))
+    }
   }
 
-  def createAccount = Action {
+  def createAccount = Action(parse.json) { request =>
     val mongoClient = MongoClient("localhost", 27017)
     val db = mongoClient("test")
     val coll = db("test")
