@@ -9,8 +9,8 @@ POST    /account/request            controllers.Whereuat.requestAccount
 POST    /account/new                controllers.Whereuat.createAccount
 
 # @request
-POST    /where                      controllers.Whereuat.request
+POST    /where                      controllers.Whereuat.atRequest
 
 # @response
-POST    /at                         controllers.Whereuat.respond
+POST    /at                         controllers.Whereuat.atRespond
 
