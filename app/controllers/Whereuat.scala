@@ -5,8 +5,6 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
-import com.mongodb.casbah.Imports._
-import com.mongodb.util.JSON._
 
 class Whereuat extends Controller {
   // Case classes for JsValues
@@ -53,15 +51,7 @@ class Whereuat extends Controller {
   def requestAccount = Action(parse.json) { request =>
     request.body.validate(requestReads).map {
       case (phone) =>
-        val mongoClient = MongoClient("localhost", 27017)
-        val db = mongoClient("test")
-        val coll = db("test")
-
-        val docs = coll.find()
-        val list = docs.toList
-
-        Ok(s"Requested account's phone number: $phone\n\n" + 
-           s"Test directory query:\n${serialize(list)}")
+        Ok(s"Requested account's phone number: $phone")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -70,17 +60,9 @@ class Whereuat extends Controller {
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
       case (phone, gcm, vcode) =>
-        val mongoClient = MongoClient("localhost", 27017)
-        val db = mongoClient("test")
-        val coll = db("test")
-
-        val docs = coll.find()
-        val list = docs.toList
-
         Ok(s"Created account's phone number: $phone\n" +
            s"Created account's GCM ID: $gcm\n" +
-           s"Created account's verification code: $vcode\n\n" + 
-           s"Test directory query:\n${serialize(list)}")
+           s"Created account's verification code: $vcode")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -89,16 +71,8 @@ class Whereuat extends Controller {
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
-        val mongoClient = MongoClient("localhost", 27017)
-        val db = mongoClient("test")
-        val coll = db("test")
-
-        val docs = coll.find()
-        val list = docs.toList
-
         Ok(s"@ Request's from phone number: $from\n" +
-           s"@ Request's to phone number: $to\n\n" +
-           s"Test directory query:\n${serialize(list)}")
+           s"@ Request's to phone number: $to")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -107,19 +81,12 @@ class Whereuat extends Controller {
   def atRespond = Action(parse.json) { request =>
     request.body.validate(atReads).map {
       case (from, to, loc) =>
-        val mongoClient = MongoClient("localhost", 27017)
-        val db = mongoClient("test")
-        val coll = db("test")
-
-        val docs = coll.find()
-        val list = docs.toList
-
+        val name_str = if (loc.name.isDefined) loc.name.get + " " else ""
+        val lat_str = f"${loc.location.latitude}%2.7f"
+        val long_str = f"${loc.location.longitude}%2.7f"
         Ok(s"@ Response's from phone number: $from\n" +
            s"@ Response's to phone number: $to\n" +
-           s"@ Response's location: " + 
-             (if (loc.name.isDefined) loc.name.get + " " else "") + 
-           f"(${loc.location.latitude}%2.7f,${loc.location.longitude}%2.7f)\n\n" +
-           s"Test directory query:\n${serialize(list)}")
+           s"@ Response's location: $name_str($lat_str,$long_str)")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
