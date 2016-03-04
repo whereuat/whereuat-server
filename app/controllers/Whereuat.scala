@@ -10,20 +10,20 @@ import com.mongodb.util.JSON._
 
 class Whereuat extends Controller {
   // Case classes for JsValues
-  case class Location(latitude: Double, longitude: Double)
-  case class KeyLocation(name: String, location: Location)
+  case class Coordinates(latitude: Double, longitude: Double)
+  case class Location(name: Option[String], location: Coordinates)
 
 
   // Implicit Reads for case classes
-  implicit val locationReads : Reads[Location] = (
+  implicit val coordReads : Reads[Coordinates] = (
     (JsPath \ "latitude").read[Double] and
     (JsPath \ "longitude").read[Double]
-  )(Location.apply _)
+  )(Coordinates.apply _)
 
-  implicit val keyLocationReads : Reads[KeyLocation] = (
-    (JsPath \ "name").read[String] and
-    (JsPath \ "location").read[Location]
-  )(KeyLocation.apply _)
+  implicit val locationReads : Reads[Location] = (
+    (JsPath \ "name").readNullable[String] and
+    (JsPath \ "coordinates").read[Coordinates]
+  )(Location.apply _)
 
 
   // Explicit Reads
@@ -42,11 +42,10 @@ class Whereuat extends Controller {
     (JsPath \ "to").read[String]
   ) tupled
 
-  val atReads : Reads[(String, String, Location, Seq[KeyLocation])] = (
+  val atReads : Reads[(String, String, Location)] = (
     (JsPath \ "from").read[String] and
     (JsPath \ "to").read[String] and
-    (JsPath \ "location").read[Location] and
-    (JsPath \ "key-locations").read[Seq[KeyLocation]]
+    (JsPath \ "location").read[Location]
   ) tupled
 
 
@@ -61,8 +60,8 @@ class Whereuat extends Controller {
         val docs = coll.find()
         val list = docs.toList
 
-        Ok("Requested account's phone number: " + phone + "\n\n" + 
-           "Test directory query:\n" + serialize(list))
+        Ok(s"Requested account's phone number: $phone\n\n" + 
+           s"Test directory query:\n${serialize(list)}")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -78,10 +77,10 @@ class Whereuat extends Controller {
         val docs = coll.find()
         val list = docs.toList
 
-        Ok("Created account's phone number: " + phone + "\n" +
-           "Created account's GCM ID: " + gcm + "\n" +
-           "Created account's verification code: " + vcode + "\n\n" + 
-           "Test directory query:\n" + serialize(list))
+        Ok(s"Created account's phone number: $phone\n" +
+           s"Created account's GCM ID: $gcm\n" +
+           s"Created account's verification code: $vcode\n\n" + 
+           s"Test directory query:\n${serialize(list)}")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -97,9 +96,9 @@ class Whereuat extends Controller {
         val docs = coll.find()
         val list = docs.toList
 
-        Ok("@ Request's from phone number: " + from + "\n" +
-           "@ Request's to phone number: " + to + "\n\n" +
-           "Test directory query:\n" + serialize(list))
+        Ok(s"@ Request's from phone number: $from\n" +
+           s"@ Request's to phone number: $to\n\n" +
+           s"Test directory query:\n${serialize(list)}")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -107,7 +106,7 @@ class Whereuat extends Controller {
 
   def atRespond = Action(parse.json) { request =>
     request.body.validate(atReads).map {
-      case (from, to, loc, key_locs) =>
+      case (from, to, loc) =>
         val mongoClient = MongoClient("localhost", 27017)
         val db = mongoClient("test")
         val coll = db("test")
@@ -115,13 +114,12 @@ class Whereuat extends Controller {
         val docs = coll.find()
         val list = docs.toList
 
-        Ok("@ Response's from phone number: " + from + "\n" +
-           "@ Response's to phone number: " + to + "\n" +
-           "@ Response's location: (" + loc.latitude + "," + loc.longitude + ")\n" +
-           "@ Response's key locations:\n" + key_locs.map {
-             case (key_loc) => "  " + key_loc.name + ": (" + key_loc.location.latitude + "," + key_loc.location.longitude + ")"
-           }.mkString("\n")+ "\n\n" +
-           "Test directory query:\n" + serialize(list))
+        Ok(s"@ Response's from phone number: $from\n" +
+           s"@ Response's to phone number: $to\n" +
+           s"@ Response's location: " + 
+             (if (loc.name.isDefined) loc.name.get + " " else "") + 
+           f"(${loc.location.latitude}%2.7f,${loc.location.longitude}%2.7f)\n\n" +
+           s"Test directory query:\n${serialize(list)}")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
