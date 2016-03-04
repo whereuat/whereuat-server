@@ -8,6 +8,10 @@
 # Database query reference
 GET     /ref/dbquery                controllers.Reference.dbQuery
 
+# GCM setup reference
+POST    /ref/gcmtoken              controllers.Reference.gcmToken
+POST    /ref/gcmsend               controllers.Reference.gcmNotify
+
 #================
 # WHEREU@ ROUTES
 #================

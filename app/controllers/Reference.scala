@@ -17,4 +17,13 @@ class Reference extends Controller {
     
     Ok(s"Test collection query:\n${serialize(list)}")
   }
+
+  // GCM Setup Reference routes
+  val gcmToken = Action {
+    Ok("POST to /ref/gcmtoken received")
+  }
+
+  val gcmNotify = Action {
+    Ok("POST to /ref/gcmsend received")
+  }
 }
