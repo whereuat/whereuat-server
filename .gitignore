@@ -1,6 +1,8 @@
 *.class
 *.log
 
+conf/config.yml
+
 # VIM specific
 *.swp
 
