@@ -8,7 +8,6 @@ import sys
 import time
 import zipfile
 
-CURRENT_WORKING_DIR = os.getcwd()
 DEPLOY_DIR = "/home/server-snapshots"
 CURRENT_DEPLOY_DIR = os.path.join(DEPLOY_DIR, "whereuat-server")
 BACKUP_DIR = os.path.join(DEPLOY_DIR, "_whereuat-server")
@@ -81,21 +80,20 @@ def unzip(zf, dest):
 
 # Start a new process running the server.
 def startServer():
-  os.chdir(CURRENT_DEPLOY_DIR)
   exec_path = os.path.join(CURRENT_DEPLOY_DIR, "bin", "whereuat-server")
   try:
     with open(os.path.join("/dev", "null")) as dev_null:
       try:
-        subprocess.Popen([exec_path], stdout=dev_null, stderr=dev_null)
-        os.chdir(CURRENT_WORKING_DIR)
+        subprocess.Popen([exec_path], 
+                         stdout=dev_null,
+                         stderr=dev_null,
+                         cwd=CURRENT_DEPLOY_DIR)
       except OSError as e:
         # Error in Popen
-        os.chdir(CURRENT_WORKING_DIR)
         print "ERROR: Server process could not be started"
         exit(1)
   except IOError as e:
     # Error in opening /dev/null
-    os.chdir(CURRENT_WORKING_DIR)
     print "ERROR: Unable to open /dev/null"
     exit(1)
 
