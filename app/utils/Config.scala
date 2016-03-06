@@ -7,36 +7,38 @@ import scala.collection.mutable.Map
 import java.util.LinkedHashMap
 
 class Config() {
-  private var api_key = ""
+  val configFilename: String = "conf/tmp-config.yml"
+  private var configMap = Map[String, String]()
 
-  def apiKey() = { api_key }
+  def apiKey1() = { configGetter("api-key1") }
+  def apiKey2() = { configGetter("api-key2") }
+
+  private def configGetter(key: String): String = {
+    configMap get key match {
+      case Some(value) => value
+      case None =>
+        println(s"WARNING: Yaml key '$key' was not loaded from $configFilename")
+        ""
+    }
+  }
 }
 
 object Config {
   def apply() = {
-    val config_fn = "conf/config.yml"
     val config = new Config()
     
     try {
       // Read file into string
-      val config_contents = Source.fromFile(config_fn).getLines.mkString
+      val configContents = Source.fromFile(config.configFilename).mkString
 
       // Build new Yaml instance and load into Scala Map
       val yaml = new Yaml()
-      val config_map = mapAsScalaMap(
-                        yaml.load(config_contents)
-                            .asInstanceOf[LinkedHashMap[String,String]])
-
-      // Set config instance properties
-      config.api_key = config_map get "api-key" match {
-        case Some(key) => key
-        case None => 
-          println("WARNING: Yaml key \"api-key\" was not loaded from config.yml")
-          ""
-      }
+      config.configMap = mapAsScalaMap(
+                           yaml.load(configContents)
+                             .asInstanceOf[LinkedHashMap[String, String]])
     } catch {
       case e: Exception =>
-        println(s"ERROR: Could not read config file $config_fn")
+        println(s"ERROR: Could not read config file ${config.configFilename}")
         throw e
     }
     config
