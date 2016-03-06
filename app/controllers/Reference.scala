@@ -5,10 +5,9 @@ import play.api.mvc._
 import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
-import utils.Config
-
 class Reference extends Controller {
-  val config = Config()
+  // Accessing global config values
+  println(global.config.apiKey1)
 
   // Database Query Reference route
   val dbQuery = Action {
