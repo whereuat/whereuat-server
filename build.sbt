@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   specs2 % Test,
-  "org.mongodb" %% "casbah" % "3.1.0"
+  "org.mongodb" %% "casbah" % "3.1.0",
+  "org.yaml" % "snakeyaml" % "1.17"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"

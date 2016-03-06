@@ -84,7 +84,10 @@ def startServer():
   try:
     with open(os.path.join("/dev", "null")) as dev_null:
       try:
-        subprocess.Popen([exec_path], stdout=dev_null, stderr=dev_null)
+        subprocess.Popen([exec_path], 
+                         stdout=dev_null,
+                         stderr=dev_null,
+                         cwd=CURRENT_DEPLOY_DIR)
       except OSError as e:
         # Error in Popen
         print "ERROR: Server process could not be started"
@@ -102,7 +105,7 @@ def stopServer():
     with open(pid_f, 'r') as pid_ref:
       pid = int(pid_ref.readline().strip())
     os.kill(pid, signal.SIGTERM)
-  except IOError as e:
+  except (IOError, OSError) as e:
     # If pid file does not exist, return
     return
 
