@@ -13,7 +13,8 @@ libraryDependencies ++= Seq(
   specs2 % Test,
   "com.twilio.sdk" % "twilio-java-sdk" % "3.4.5",
   "org.mongodb" %% "casbah" % "3.1.0",
-  "org.yaml" % "snakeyaml" % "1.17"
+  "org.yaml" % "snakeyaml" % "1.17",
+  "com.google.gcm" % "gcm-server" % "1.0.0"
 )
 
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
