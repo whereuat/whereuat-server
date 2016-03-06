@@ -6,10 +6,7 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
-import utils.Config
-
 class Whereuat extends Controller {
-
   // Case classes for JsValues
   case class Coordinates(latitude: Double, longitude: Double)
   case class Location(name: Option[String], location: Coordinates)
