@@ -6,15 +6,16 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 import java.util.LinkedHashMap
 
-class Config(config_fn: String) {
+class Config() {
   private var api_key = ""
 
   def apiKey() = { api_key }
 }
 
 object Config {
-  def apply(config_fn: String) = {
-    val config = new Config(config_fn)
+  def apply() = {
+    val config_fn = "conf/config.yml"
+    val config = new Config()
     
     try {
       // Read file into string

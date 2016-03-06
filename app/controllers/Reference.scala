@@ -8,7 +8,7 @@ import com.mongodb.util.JSON._
 import utils.Config
 
 class Reference extends Controller {
-  val config = Config("conf/config.yml")
+  val config = Config()
 
   // Database Query Reference route
   val dbQuery = Action {
