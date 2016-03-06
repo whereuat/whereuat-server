@@ -14,6 +14,8 @@ class Config() {
   def twilioAuthToken() = { configGetter("twilio-auth-token") }
   def twilioNumber() = { configGetter("twilio-number") }
 
+  def gcmApiKey() = { configGetter("gcm-api-key") }
+
   private def configGetter(key: String): String = {
     configMap get key match {
       case Some(value) => value
