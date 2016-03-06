@@ -7,7 +7,7 @@ import scala.collection.mutable.Map
 import java.util.LinkedHashMap
 
 class Config() {
-  val configFilename: String = "conf/config.yml"
+  private val configFilename: String = "conf/config.yml"
   private var configMap = Map[String, String]()
 
   def apiKey1() = { configGetter("api-key1") }
