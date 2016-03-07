@@ -31,7 +31,7 @@ class Whereuat extends Controller {
 
   val createReads : Reads[(String, String, String)] = (
     (JsPath \ "phone-#").read[String] and
-    (JsPath \ "gcm-id").read[String] and
+    (JsPath \ "gcm-token").read[String] and
     (JsPath \ "verification-code").read[String]
   ) tupled
 
@@ -63,7 +63,7 @@ class Whereuat extends Controller {
     request.body.validate(createReads).map {
       case (phone, gcm, vcode) =>
         Ok(s"Created account's phone number: $phone\n" +
-           s"Created account's GCM ID: $gcm\n" +
+           s"Created account's GCM token: $gcm\n" +
            s"Created account's verification code: $vcode")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
