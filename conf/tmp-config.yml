@@ -1,2 +1,3 @@
-api-key1: <api-key1-here>
-api-key2: <api-key2-here>
+twilio-account-sid: <twilio-account-sid-here>
+twilio-auth-token:  <twilio-auth-token-here>
+twilio-number:      <twilio-number>

@@ -10,8 +10,9 @@ class Config() {
   private val configFilename: String = "conf/config.yml"
   private var configMap = Map[String, String]()
 
-  def apiKey1() = { configGetter("api-key1") }
-  def apiKey2() = { configGetter("api-key2") }
+  def twilioAccountSid() = { configGetter("twilio-account-sid") }
+  def twilioAuthToken() = { configGetter("twilio-auth-token") }
+  def twilioNumber() = { configGetter("twilio-number") }
 
   private def configGetter(key: String): String = {
     configMap get key match {

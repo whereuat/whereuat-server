@@ -6,9 +6,6 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
 class Reference extends Controller {
-  // Accessing global config values
-  println(global.config.apiKey1)
-
   // Database Query Reference route
   val dbQuery = Action {
     val mongoClient = MongoClient("localhost", 27017)

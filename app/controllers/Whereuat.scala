@@ -51,6 +51,8 @@ class Whereuat extends Controller {
   def requestAccount = Action(parse.json) { request =>
     request.body.validate(requestReads).map {
       case (phone) =>
+        val sender = new SmsVerificationSender()
+        sender.send(phone, "Input 12345 into whereu@ to create your account.")
         Ok(s"Requested account's phone number: $phone")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
