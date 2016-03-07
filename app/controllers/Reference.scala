@@ -7,11 +7,9 @@ import play.api.libs.json.Reads._
 import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 import com.google.android.gcm.server.Sender
+import com.google.android.gcm.server.Message
 
 class Reference extends Controller {
-  // Accessing global config values
-  println(global.config.apiKey1)
-  
   val db = MongoClient("localhost", 27017)("test")
 
   // Database Query Reference route
@@ -24,14 +22,21 @@ class Reference extends Controller {
     Ok(s"Test collection query:\n${serialize(list)}")
   }
 
+  
+  // Sender for GCM messages
+  val gcmSender = new Sender(global.config.gcmApiKey)
 
-  val gcmSender = new Sender(config.gcmApiKey)
-
+  // JSON Reads for GCM routes
   val gcmTokenReads : Reads[String] = (
     (JsPath \ "gcm-token").read[String]
   )
 
+  val gcmMsgReads : Reads[String] = (
+    (JsPath \ "message").read[String]
+  )
+
   // GCM Setup Reference routes
+  // Parse client's GCM token
   def gcmToken = Action(parse.json) { request =>
     request.body.validate(gcmTokenReads).map {
       case (gcmTok) =>
@@ -45,12 +50,30 @@ class Reference extends Controller {
     }
   }
 
+  // Show current client's GCM tokens
   def showClients = Action {
     val coll = db("clients")
     Ok(s"Clients:\n${serialize(coll.find().toList)}")
   }
 
-  def gcmNotify = Action {
-    Ok("POST to /ref/gcmsend received")
+  // Send notification to client
+  def gcmNotify = Action(parse.json) { request =>
+    request.body.validate(gcmMsgReads).map {
+      case (gcmMsg) =>
+        // Get a client from the database
+        val gcmTok: String = db("clients").findOne.get("gcm-token") match {
+          case tok: String => tok
+          case None => ""
+        }
+        // Build GCM message
+        val msg = new Message.Builder()
+          .addData("message", gcmMsg)
+          .build()
+        // Send message
+        gcmSender.send(msg, gcmTok, 5)
+        Ok("GCM message sent")
+    }.recoverTotal {
+      e => BadRequest("ERROR: " + JsError.toJson(e))
+    }
   }
 }
