@@ -18,18 +18,18 @@ class SMSVerificationSender {
 
   def send(clientNumber: String, message: String) {
     try {
-      val twilioClient: TwilioRestClient = new TwilioRestClient(
-        AccountSid, AuthToken)
-      val account: Account = twilioClient.getAccount()
-
-      val factory: MessageFactory = account.getMessageFactory()
       var params = List[NameValuePair]()
+      params ::= (new BasicNameValuePair("To", clientNumber))
+      params ::= (new BasicNameValuePair("From", TwilioNumber))
+      params ::= (new BasicNameValuePair("Body", message))
 
-      params ::= (new BasicNameValuePair("To", clientNumber));
-      params ::= (new BasicNameValuePair("From", TwilioNumber));
-      params ::= (new BasicNameValuePair("Body", message));
       // Creates and sends the SMS
-      factory.create(params);
+      val twilioClient: TwilioRestClient = new TwilioRestClient(
+        AccountSid,
+        AuthToken)
+      val account: Account = twilioClient.getAccount()
+      val factory: MessageFactory = account.getMessageFactory()
+      factory.create(params)
     } catch {
       case e: TwilioRestException =>
         println(s"ERROR: Could not send the SMS.\n${e.getErrorMessage()}")
