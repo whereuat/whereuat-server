@@ -30,9 +30,3 @@ class SmsVerificationSender {
     }
   }
 }
-
-object SmsVerificationSender {
-  def apply() = {
-    new SmsVerificationSender()
-  }
-}
