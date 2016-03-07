@@ -10,7 +10,6 @@ GET     /ref/dbquery                controllers.Reference.dbQuery
 
 # GCM setup reference
 POST    /ref/gcmtoken              controllers.Reference.gcmToken
-GET     /ref/gcmtoken              controllers.Reference.showClients
 POST    /ref/gcmsend               controllers.Reference.gcmNotify
 
 #================

@@ -50,12 +50,6 @@ class Reference extends Controller {
     }
   }
 
-  // Show current client's GCM tokens
-  def showClients = Action {
-    val coll = db("clients")
-    Ok(s"Clients:\n${serialize(coll.find().toList)}")
-  }
-
   // Send notification to client
   def gcmNotify = Action(parse.json) { request =>
     request.body.validate(gcmMsgReads).map {
