@@ -6,6 +6,11 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 
+import com.mongodb.casbah.Imports._
+import com.mongodb.util.JSON._
+
+import com.google.android.gcm.server.{Sender, Message}
+
 class Whereuat extends Controller {
   // Case classes for JsValues
   case class Coordinates(latitude: Double, longitude: Double)
@@ -47,6 +52,9 @@ class Whereuat extends Controller {
   ) tupled
 
 
+  val db = MongoClient("localhost", 27017)("whereu@")
+  val gcmSender = new Sender(global.config.gcmApiKey)
+
   // Route actions
   def requestAccount = Action(parse.json) { request =>
     request.body.validate(requestReads).map {
@@ -62,6 +70,9 @@ class Whereuat extends Controller {
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
       case (phone, gcm, vcode) =>
+        val coll = db("clients")
+        val client = MongoDBObject("gcm-token" -> gcm, "phone-#" -> phone)
+        coll.insert(client)
         Ok(s"Created account's phone number: $phone\n" +
            s"Created account's GCM token: $gcm\n" +
            s"Created account's verification code: $vcode")
@@ -73,6 +84,19 @@ class Whereuat extends Controller {
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
+        val coll = db("clients")
+        val query = MongoDBObject("phone-#" -> to)
+        println(db("clients").findOne(query))
+        val toGcmTok: String = db("clients")
+          .findOne(query)
+          .get("gcm-token") match {
+          case tok: String => tok
+          case None => ""
+        }
+        val msg = new Message.Builder()
+          .addData("message", s"$from has sent you an @request")
+          .build()
+        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
         Ok(s"@ Request's from phone number: $from\n" +
            s"@ Request's to phone number: $to")
     }.recoverTotal {
@@ -86,6 +110,19 @@ class Whereuat extends Controller {
         val name_str = if (loc.name.isDefined) loc.name.get + " " else ""
         val lat_str = f"${loc.location.latitude}%2.7f"
         val long_str = f"${loc.location.longitude}%2.7f"
+
+        val coll = db("clients")
+        val query = MongoDBObject("phone-#" -> to)
+        val toGcmTok: String = db("clients")
+          .findOne(query)
+          .get("gcm-token") match {
+          case tok: String => tok
+          case None => ""
+        }
+        val msg = new Message.Builder()
+          .addData("message", s"$from has responded to your @request")
+          .build()
+        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
         Ok(s"@ Response's from phone number: $from\n" +
            s"@ Response's to phone number: $to\n" +
            s"@ Response's location: $name_str($lat_str,$long_str)")

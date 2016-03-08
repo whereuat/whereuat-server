@@ -9,4 +9,5 @@ object Global extends GlobalSettings {
 
 package object global {
   val config = Config()
+  val GCM_RETRIES = 5
 }
