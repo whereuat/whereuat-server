@@ -1,10 +1,12 @@
 package utils
 
-import org.yaml.snakeyaml.Yaml
 import scala.io.Source
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
+
 import java.util.LinkedHashMap
+
+import org.yaml.snakeyaml.Yaml
 
 class Config() {
   private val configFilename: String = "conf/config.yml"
