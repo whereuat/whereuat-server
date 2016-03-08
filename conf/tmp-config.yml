@@ -1,3 +1,5 @@
 twilio-account-sid: <twilio-account-sid-here>
 twilio-auth-token:  <twilio-auth-token-here>
 twilio-number:      <twilio-number>
+
+gcm-api-key:        <api-key-here>

@@ -1,10 +1,20 @@
 package controllers
 
+// Play imports
 import play.api._
-import play.api.mvc._
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.libs.json.Reads._
-import play.api.libs.functional.syntax._
+import play.api.mvc._
+
+// Scala imports
+
+// Java imports
+
+// Third-party imports
+import com.google.android.gcm.server.{Sender, Message}
+import com.mongodb.casbah.Imports._
+import com.mongodb.util.JSON._
 
 class Whereuat extends Controller {
   // Case classes for JsValues
@@ -31,7 +41,7 @@ class Whereuat extends Controller {
 
   val createReads : Reads[(String, String, String)] = (
     (JsPath \ "phone-#").read[String] and
-    (JsPath \ "gcm-id").read[String] and
+    (JsPath \ "gcm-token").read[String] and
     (JsPath \ "verification-code").read[String]
   ) tupled
 
@@ -45,6 +55,22 @@ class Whereuat extends Controller {
     (JsPath \ "to").read[String] and
     (JsPath \ "location").read[Location]
   ) tupled
+
+
+  // Controller-scope values
+  val db = MongoClient("localhost", 27017)("whereu@")
+  val gcmSender = new Sender(global.config.gcmApiKey)
+
+
+  // Utility functions
+  def phoneToGcm(phone: String) : String = {
+    val query = MongoDBObject("phone-#" -> phone)
+    val gcmTok: String = db("clients").findOne(query).get("gcm-token") match {
+      case tok: String => tok
+      case None => ""
+    }
+    gcmTok
+  }
 
 
   // Route actions
@@ -62,8 +88,10 @@ class Whereuat extends Controller {
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
       case (phone, gcm, vcode) =>
+        val client = MongoDBObject("gcm-token" -> gcm, "phone-#" -> phone)
+        db("clients").insert(client)
         Ok(s"Created account's phone number: $phone\n" +
-           s"Created account's GCM ID: $gcm\n" +
+           s"Created account's GCM token: $gcm\n" +
            s"Created account's verification code: $vcode")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
@@ -73,6 +101,11 @@ class Whereuat extends Controller {
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
+        val toGcmTok = phoneToGcm(to)
+        val msg = new Message.Builder()
+          .addData("message", s"$from has sent you an @request")
+          .build()
+        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
         Ok(s"@ Request's from phone number: $from\n" +
            s"@ Request's to phone number: $to")
     }.recoverTotal {
@@ -86,6 +119,12 @@ class Whereuat extends Controller {
         val name_str = if (loc.name.isDefined) loc.name.get + " " else ""
         val lat_str = f"${loc.location.latitude}%2.7f"
         val long_str = f"${loc.location.longitude}%2.7f"
+
+        val toGcmTok = phoneToGcm(to)
+        val msg = new Message.Builder()
+          .addData("message", s"$from has responded to your @request")
+          .build()
+        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
         Ok(s"@ Response's from phone number: $from\n" +
            s"@ Response's to phone number: $to\n" +
            s"@ Response's location: $name_str($lat_str,$long_str)")

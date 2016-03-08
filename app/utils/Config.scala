@@ -1,10 +1,12 @@
 package utils
 
-import org.yaml.snakeyaml.Yaml
 import scala.io.Source
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
+
 import java.util.LinkedHashMap
+
+import org.yaml.snakeyaml.Yaml
 
 class Config() {
   private val configFilename: String = "conf/config.yml"
@@ -13,6 +15,8 @@ class Config() {
   def twilioAccountSid() = { configGetter("twilio-account-sid") }
   def twilioAuthToken() = { configGetter("twilio-auth-token") }
   def twilioNumber() = { configGetter("twilio-number") }
+
+  def gcmApiKey() = { configGetter("gcm-api-key") }
 
   private def configGetter(key: String): String = {
     configMap get key match {
