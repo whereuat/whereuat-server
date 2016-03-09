@@ -91,7 +91,7 @@ class Whereuat extends Controller {
   // POST route for when a client wants to initially create an account. This
   // request should receive the client's properly formatted phone number in the
   // request body, create a verification code and add it to the verifiers
-  // collections, and then send a text to the client's phone number.
+  // collection, and then send a text to the client's phone number.
   def requestAccount = Action(parse.json) { request =>
     request.body.validate(requestReads).map {
       case (phone) =>
@@ -103,12 +103,12 @@ class Whereuat extends Controller {
         // Update with an upsert because the verifier should overwrite an
         // existing one for the same phone number and create a new one if one
         // doesn't exist.
-        db("verifiers").update(query, verifier, true, false)
+        db("verifiers").update(query, verifier, upsert=true)
 
-        val sender = new SmsVerificationSender()
-        sender.send(phone, s"Your whereu@ verification code is $vCode. " +
-                           s"Input this code into the whereu@ app to create " +
-                           s"your account.")
+        val smsSender = new SmsVerificationSender()
+        smsSender.send(phone, s"Your whereu@ verification code is $vCode. " +
+                              s"Input this code into the whereu@ app to " +
+                              s"create your account.")
         Ok(s"Created verifier for phone number $phone")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
@@ -128,7 +128,7 @@ class Whereuat extends Controller {
           val client = MongoDBObject("gcm-token" -> gcm, "phone-#" -> phone)
           // Update with an upsert rather than insert in order to handle a
           // client needing to create their account.
-          db("client").update(query, client, true, false)
+          db("client").update(query, client, upsert=true)
           Ok(s"Created account for phone number $phone\n")
         } else {
           InternalServerError("VERIFICATION ERROR: Verification codes do not " +
