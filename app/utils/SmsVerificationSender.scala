@@ -9,12 +9,14 @@ import org.apache.http.message.BasicNameValuePair
 import org.apache.http.NameValuePair
 
 
-class SmsVerificationSender {
-  def send(clientNumber: String, message: String) {
+object SmsVerificationSender {
+  def send(clientNumber: String, vCode: String): Unit = {
     try {
       var params = List[NameValuePair]()
       params ::= (new BasicNameValuePair("To", clientNumber))
       params ::= (new BasicNameValuePair("From", global.config.twilioNumber))
+      val message = s"Your whereu@ verification code is $vCode. Input this " +
+                    s"code into the whereu@ app to create your account."
       params ::= (new BasicNameValuePair("Body", message))
 
       // Creates and sends the SMS
