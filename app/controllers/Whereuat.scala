@@ -4,7 +4,6 @@ package controllers
 import play.api._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.mvc._
 
 // Scala imports
@@ -19,12 +18,14 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
 // whereu@ imports
+import utils.LocationFinder
+import utils.LocationFinder.{Coordinates, Location}
 import utils.SmsVerificationSender
 
+
 class Whereuat extends Controller {
-  // Case classes for JsValues
-  case class Coordinates(latitude: Double, longitude: Double)
-  case class Location(name: Option[String], location: Coordinates)
+  val currLoc = Coordinates(42.727773, -73.689920)
+  val nearestLoc = LocationFinder.nearestLocation(currLoc)
 
 
   // Implicit Reads for case classes
@@ -64,7 +65,7 @@ class Whereuat extends Controller {
 
   // Controller-scope values
   val db = MongoClient("localhost", 27017)("whereu@")
-  val gcmSender = new Sender(global.config.gcmApiKey)
+  val gcmSender = new Sender(global.config.googleApiKey)
 
 
   // Utility functions

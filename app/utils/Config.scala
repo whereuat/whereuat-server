@@ -16,7 +16,7 @@ class Config() {
   def twilioAuthToken() = { configGetter("twilio-auth-token") }
   def twilioNumber() = { configGetter("twilio-number") }
 
-  def gcmApiKey() = { configGetter("gcm-api-key") }
+  def googleApiKey() = { configGetter("google-api-key") }
 
   private def configGetter(key: String): String = {
     configMap get key match {
