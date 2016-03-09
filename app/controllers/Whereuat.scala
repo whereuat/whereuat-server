@@ -18,6 +18,9 @@ import com.google.android.gcm.server.{Sender, Message}
 import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
+// whereu@ imports
+import utils.SmsVerificationSender
+
 class Whereuat extends Controller {
   // Case classes for JsValues
   case class Coordinates(latitude: Double, longitude: Double)
@@ -105,10 +108,7 @@ class Whereuat extends Controller {
         // doesn't exist.
         db("verifiers").update(query, verifier, upsert=true)
 
-        val smsSender = new SmsVerificationSender()
-        smsSender.send(phone, s"Your whereu@ verification code is $vCode. " +
-                              s"Input this code into the whereu@ app to " +
-                              s"create your account.")
+        SmsVerificationSender.send(phone, vCode)
         Ok(s"Created verifier for phone number $phone")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
