@@ -18,6 +18,9 @@ import com.google.android.gcm.server.{Sender, Message}
 import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
+// whereu@ imports
+import utils.SmsVerificationSender
+
 class Whereuat extends Controller {
   // Case classes for JsValues
   case class Coordinates(latitude: Double, longitude: Double)
