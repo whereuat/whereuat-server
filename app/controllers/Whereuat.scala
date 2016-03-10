@@ -24,8 +24,10 @@ import utils.SmsVerificationSender
 
 
 class Whereuat extends Controller {
-  val currLoc = Location(42.727773, -73.689920)
-  val nearestLoc = LocationFinder.nearestLocation(currLoc)
+  val currLoc = Location(42.757778, -73.629926)
+  val pTown = Some(Place(Some("Pallet Town"), Location(42.757773, -73.629920)))
+  val nearestLoc = LocationFinder.nearestLocation(currLoc, pTown)
+  println(nearestLoc.toString)
 
 
   // Explicit Reads

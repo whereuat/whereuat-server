@@ -5,7 +5,9 @@ import play.api.libs.json._
 import play.api.libs.ws._
 import play.api.Play.current
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
+import scala.math._
 import scala.util.{Success, Failure}
 
 object LocationFinder {
@@ -32,8 +34,33 @@ object LocationFinder {
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
+  def dist(a: Location, b: Location): Double = {
+    sqrt(pow(a.lat - b.lat, 2) + pow(a.lng - b.lng, 2))
+  }
+
   def nearestLocation(currLoc: Location, 
-                      keyLoc: Option[Place] = None): Place = {
+                      keyLoc: Option[Place] = None): Option[Place] = {
+    val placeLoc = nearestPlacesLocation(currLoc)
+    var placeDist = Double.MaxValue
+    if (placeLoc isDefined) {
+      placeDist = dist(currLoc, placeLoc.get.location)
+    }
+
+    var keyDist = Double.MaxValue
+    if (keyLoc isDefined) {
+      keyDist = dist(currLoc, keyLoc.get.location)
+    }
+
+    if (keyDist == Double.MaxValue && placeDist == Double.MaxValue) {
+      None
+    } else if (keyDist <= placeDist) {
+      keyLoc
+    } else {
+      placeLoc
+    }
+  }
+
+  def nearestPlacesLocation(currLoc: Location): Option[Place] = {
     val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     val locString = f"${currLoc.lat}%2.6f,${currLoc.lng}%2.6f"
     val response = WS.url(url)
@@ -42,22 +69,24 @@ object LocationFinder {
       .withQueryString("rankby" -> "distance")
       .withQueryString("type" -> "establishment")
       .get()
-    val nearest: Future[Place] = response.map { res =>
+    val nearestFuture: Future[Option[Place]] = response.map { res =>
       res.json.validate(placesReads).map {
         case p =>
-          p.places(0)
+          if (p.places.length > 0) 
+            Some(p.places(0))
+          else
+            None
       }.recoverTotal {
-        e => Place(None, Location(0, 0))
+        e => None
       }
     }
-    nearest.onComplete {
+    val nearestOpt = Await.ready(nearestFuture, Duration.Inf).value.get match {
       case Success(p) =>
-        println(p.toString)
-      case Failure(ex) =>
-        println("ERROR: " + ex)
+        p
+      case Failure(e) =>
+        println("ERROR: " + e)
+        None
     }
-
-    var ret = Place(None, Location(1.0, 1.0))
-    ret
+    nearestOpt
   }
 }
