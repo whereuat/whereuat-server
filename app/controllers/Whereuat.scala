@@ -56,9 +56,9 @@ class Whereuat extends Controller {
   // Utility functions
   def phoneToGcm(phone: String) : String = {
     val query = MongoDBObject("phone-#" -> phone)
-    val gcmTok: String = db("clients").findOne(query).get("gcm-token") match {
-      case tok: String => tok
-      case None => ""
+    val gcmTok = db("clients").findOne(query) match {
+      case Some(doc) => doc.get("gcm-token").toString
+      case None => "" 
     }
     gcmTok
   }
@@ -128,13 +128,18 @@ class Whereuat extends Controller {
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
-        val toGcmTok = phoneToGcm(to)
-        val msg = new Message.Builder()
-          .addData("message", s"$from has sent you an @request")
-          .build()
-        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-        Ok(s"@ Request's from phone number: $from\n" +
-           s"@ Request's to phone number: $to")
+        phoneToGcm(to) match {
+          case "" =>
+            UnprocessableEntity("ERROR: " +
+              s"GCM token for $to not found in database")
+          case toGcmTok =>
+            val msg = new Message.Builder()
+              .addData("message", s"$from has sent you an @request")
+              .build()
+            gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
+            Ok(s"@ Request's from phone number: $from\n" +
+               s"@ Request's to phone number: $to")
+        }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
@@ -147,14 +152,19 @@ class Whereuat extends Controller {
         val latStr = f"${currLoc.lat}%2.7f"
         val longStr = f"${currLoc.lng}%2.7f"
 
-        val toGcmTok = phoneToGcm(to)
-        val msg = new Message.Builder()
-          .addData("message", s"$from is at ${nearLoc.get.name}")
-          .build()
-        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-        Ok(s"@ Response's from phone number: $from\n" +
-           s"@ Response's to phone number: $to\n" +
-           s"@ Response's location: ($latStr,$longStr)")
+        phoneToGcm(to) match {
+          case "" =>
+            UnprocessableEntity("ERROR: " + 
+              s"GCM token for $to not found in database")
+          case toGcmTok =>
+            val msg = new Message.Builder()
+              .addData("message", s"$from is at ${nearLoc.get.name}")
+              .build()
+            gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
+            Ok(s"@ Response's from phone number: $from\n" +
+               s"@ Response's to phone number: $to\n" +
+               s"@ Response's location: ($latStr,$longStr)")
+        }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
