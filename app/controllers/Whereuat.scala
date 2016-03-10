@@ -19,25 +19,13 @@ import com.mongodb.util.JSON._
 
 // whereu@ imports
 import utils.LocationFinder
-import utils.LocationFinder.{Coordinates, Location}
+import utils.LocationFinder.{Location, Place}
 import utils.SmsVerificationSender
 
 
 class Whereuat extends Controller {
-  val currLoc = Coordinates(42.727773, -73.689920)
+  val currLoc = Location(42.727773, -73.689920)
   val nearestLoc = LocationFinder.nearestLocation(currLoc)
-
-
-  // Implicit Reads for case classes
-  implicit val coordReads : Reads[Coordinates] = (
-    (JsPath \ "latitude").read[Double] and
-    (JsPath \ "longitude").read[Double]
-  )(Coordinates.apply _)
-
-  implicit val locationReads : Reads[Location] = (
-    (JsPath \ "name").readNullable[String] and
-    (JsPath \ "coordinates").read[Coordinates]
-  )(Location.apply _)
 
 
   // Explicit Reads
@@ -56,10 +44,10 @@ class Whereuat extends Controller {
     (JsPath \ "to").read[String]
   ) tupled
 
-  val atReads : Reads[(String, String, Location)] = (
+  val atReads : Reads[(String, String, Place)] = (
     (JsPath \ "from").read[String] and
     (JsPath \ "to").read[String] and
-    (JsPath \ "location").read[Location]
+    (JsPath \ "place").read[Place]
   ) tupled
 
 
@@ -159,8 +147,8 @@ class Whereuat extends Controller {
     request.body.validate(atReads).map {
       case (from, to, loc) =>
         val name_str = if (loc.name.isDefined) loc.name.get + " " else ""
-        val lat_str = f"${loc.location.latitude}%2.7f"
-        val long_str = f"${loc.location.longitude}%2.7f"
+        val lat_str = f"${loc.location.lat}%2.7f"
+        val long_str = f"${loc.location.lng}%2.7f"
 
         val toGcmTok = phoneToGcm(to)
         val msg = new Message.Builder()
