@@ -27,17 +27,23 @@ object LocationFinder {
     (JsPath \ "geometry" \ "location").read[Location]
   )(Place.apply _)
 
+  // Explicit Reads for Places case class
   val placesReads : Reads[Places] = (
     (JsPath \ "results").read[Seq[Place]].map(Places(_))
   )
 
 
+  // Concurrent execution context for Future
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
+
+  // Find Euclidean distance between two GPS coordinates
   def dist(a: Location, b: Location): Double = {
     sqrt(pow(a.lat - b.lat, 2) + pow(a.lng - b.lng, 2))
   }
 
+  // Find the nearest location to the given current location, given the nearest
+  // key location
   def nearestLocation(currLoc: Location, 
                       keyLoc: Option[Place] = None): Option[Place] = {
     val placeLoc = nearestPlacesLocation(currLoc)

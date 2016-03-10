@@ -125,6 +125,10 @@ class Whereuat extends Controller {
     }
   }
 
+  // POST route for when a user sends an @request to another user. This route 
+  // should receive the client's properly formatted phone number and the phone
+  // number of their desired recipient, verify that the recipient exists in the
+  // database, then send the recipient a push notification
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
@@ -145,25 +149,34 @@ class Whereuat extends Controller {
     }
   }
 
+  // POST route for when a user responds to another user's @request. This route
+  // should receive the client's properly formatted phone number, current
+  // GPS coordinates, closest key location, and phone number of their desired
+  // recipient, then verify that the recipient exists in the database, and
+  // send the recipient a push notification
   def atRespond = Action(parse.json) { request =>
     request.body.validate(atReads).map {
       case (from, to, currLoc, keyLoc) =>
-        val nearLoc = LocationFinder.nearestLocation(currLoc, keyLoc)
         val latStr = f"${currLoc.lat}%2.7f"
         val longStr = f"${currLoc.lng}%2.7f"
-
-        phoneToGcm(to) match {
-          case "" =>
-            UnprocessableEntity("ERROR: " + 
-              s"GCM token for $to not found in database")
-          case toGcmTok =>
-            val msg = new Message.Builder()
-              .addData("message", s"$from is at ${nearLoc.get.name}")
-              .build()
-            gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-            Ok(s"@ Response's from phone number: $from\n" +
-               s"@ Response's to phone number: $to\n" +
-               s"@ Response's location: ($latStr,$longStr)")
+        LocationFinder.nearestLocation(currLoc, keyLoc) match {
+          case None =>
+            FailedDependency("ERROR: " +
+              s"Nearest location for ($latStr,$longStr) could not be found")
+          case Some(nearLoc) =>
+            phoneToGcm(to) match {
+              case "" =>
+                UnprocessableEntity("ERROR: " + 
+                  s"GCM token for $to not found in database")
+              case toGcmTok =>
+                val msg = new Message.Builder()
+                  .addData("message", s"$from is at ${nearLoc.name}")
+                  .build()
+                gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
+                Ok(s"@ Response's from phone number: $from\n" +
+                   s"@ Response's to phone number: $to\n" +
+                   s"@ Response's location: ($latStr,$longStr)")
+            }
         }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
