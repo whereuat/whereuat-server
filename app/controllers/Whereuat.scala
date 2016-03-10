@@ -56,7 +56,7 @@ class Whereuat extends Controller {
   // Utility functions
   def phoneToGcm(phone: String) : String = {
     val query = MongoDBObject("phone-#" -> phone)
-    val gcmTok = db("clients").findOne(query) match {
+    val gcmTok = db("client").findOne(query) match {
       case Some(doc) => doc.get("gcm-token").toString
       case None => "" 
     }
@@ -105,7 +105,7 @@ class Whereuat extends Controller {
   // account. This request should receive the client's properly formatted phone
   // number, GCM ID, and verification code in the request body, make sure the
   // verification code matches the one stored in the verifiers collection, and
-  // then add them to the clients collection if it does.
+  // then add them to the client collection if it does.
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
       case (phone, gcm, vCode) =>
