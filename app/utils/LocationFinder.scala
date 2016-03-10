@@ -25,6 +25,10 @@ object LocationFinder {
     (JsPath \ "geometry" \ "location").read[Location]
   )(Place.apply _)
 
+  val placesReads : Reads[Places] = (
+    (JsPath \ "results").read[Seq[Place]].map(Places(_))
+  )
+
 
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
@@ -36,14 +40,19 @@ object LocationFinder {
       .withQueryString("key" -> global.config.googleApiKey)
       .withQueryString("location" -> locString)
       .withQueryString("rankby" -> "distance")
+      .withQueryString("type" -> "establishment")
       .get()
-    val jsonResult: Future[String] = response.map {
-      res =>
-        Json.stringify(res.json)
+    val nearest: Future[Place] = response.map { res =>
+      res.json.validate(placesReads).map {
+        case p =>
+          p.places(0)
+      }.recoverTotal {
+        e => Place(None, Location(0, 0))
+      }
     }
-    jsonResult.onComplete {
-      case Success(s) =>
-        println(s)
+    nearest.onComplete {
+      case Success(p) =>
+        println(p.toString)
       case Failure(ex) =>
         println("ERROR: " + ex)
     }
