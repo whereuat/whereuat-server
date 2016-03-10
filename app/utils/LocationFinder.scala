@@ -12,7 +12,7 @@ import scala.util.{Success, Failure}
 
 object LocationFinder {
   case class Location(lat: Double, lng: Double)
-  case class Place(name: Option[String], location: Location)
+  case class Place(name: String, location: Location)
   case class Places(places: Seq[Place])
 
 
@@ -23,7 +23,7 @@ object LocationFinder {
   )(Location.apply _)
 
   implicit val placeReads : Reads[Place] = (
-    (JsPath \ "name").readNullable[String] and
+    (JsPath \ "name").read[String] and
     (JsPath \ "geometry" \ "location").read[Location]
   )(Place.apply _)
 

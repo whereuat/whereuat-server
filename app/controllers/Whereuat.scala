@@ -24,12 +24,6 @@ import utils.SmsVerificationSender
 
 
 class Whereuat extends Controller {
-  val currLoc = Location(42.757778, -73.629926)
-  val pTown = Some(Place(Some("Pallet Town"), Location(42.757773, -73.629920)))
-  val nearestLoc = LocationFinder.nearestLocation(currLoc, pTown)
-  println(nearestLoc.toString)
-
-
   // Explicit Reads
   val requestReads : Reads[String] = (
     (JsPath \ "phone-#").read[String]
@@ -46,10 +40,11 @@ class Whereuat extends Controller {
     (JsPath \ "to").read[String]
   ) tupled
 
-  val atReads : Reads[(String, String, Place)] = (
+  val atReads : Reads[(String, String, Location, Option[Place])] = (
     (JsPath \ "from").read[String] and
     (JsPath \ "to").read[String] and
-    (JsPath \ "place").read[Place]
+    (JsPath \ "current-location").read[Location] and
+    (JsPath \ "key-location").readNullable[Place]
   ) tupled
 
 
@@ -147,19 +142,19 @@ class Whereuat extends Controller {
 
   def atRespond = Action(parse.json) { request =>
     request.body.validate(atReads).map {
-      case (from, to, loc) =>
-        val name_str = if (loc.name.isDefined) loc.name.get + " " else ""
-        val lat_str = f"${loc.location.lat}%2.7f"
-        val long_str = f"${loc.location.lng}%2.7f"
+      case (from, to, currLoc, keyLoc) =>
+        val nearLoc = LocationFinder.nearestLocation(currLoc, keyLoc)
+        val latStr = f"${currLoc.lat}%2.7f"
+        val longStr = f"${currLoc.lng}%2.7f"
 
         val toGcmTok = phoneToGcm(to)
         val msg = new Message.Builder()
-          .addData("message", s"$from has responded to your @request")
+          .addData("message", s"$from is at ${nearLoc.get.name}")
           .build()
         gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
         Ok(s"@ Response's from phone number: $from\n" +
            s"@ Response's to phone number: $to\n" +
-           s"@ Response's location: $name_str($lat_str,$long_str)")
+           s"@ Response's location: ($latStr,$longStr)")
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
