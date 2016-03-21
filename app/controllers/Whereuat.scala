@@ -44,6 +44,8 @@ class Whereuat extends Controller {
     (JsPath \ "from").read[String] and
     (JsPath \ "to").read[String] and
     (JsPath \ "current-location").read[Location] and
+    // Client also sends the nearest key location to the server. If none exists
+    // then the client sends a null.
     (JsPath \ "key-location").readNullable[Place]
   ) tupled
 
