@@ -60,7 +60,7 @@ class Whereuat extends Controller {
     val query = MongoDBObject("phone-#" -> phone)
     val gcmTok = db("client").findOne(query) match {
       case Some(doc) => doc.get("gcm-token").toString
-      case None => "" 
+      case None => ""
     }
     gcmTok
   }
