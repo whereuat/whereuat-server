@@ -47,23 +47,15 @@ object LocationFinder {
   def nearestLocation(currLoc: Location, 
                       keyLoc: Option[Place] = None): Option[Place] = {
     val placeLoc = nearestPlacesLocation(currLoc)
-    var placeDist = Double.MaxValue
-    if (placeLoc isDefined) {
-      placeDist = dist(currLoc, placeLoc.get.location)
-    }
-
-    var keyDist = Double.MaxValue
-    if (keyLoc isDefined) {
-      keyDist = dist(currLoc, keyLoc.get.location)
-    }
+    var placeDist = if (placeLoc isDefined) dist(currLoc, placeLoc.get.location) 
+                    else Double.MaxValue
+    var keyDist = if (keyLoc isDefined) dist(currLoc, keyLoc.get.location)
+                  else Double.MaxValue
 
     if (keyDist == Double.MaxValue && placeDist == Double.MaxValue) {
       None
-    } else if (keyDist <= placeDist) {
-      keyLoc
-    } else {
-      placeLoc
-    }
+    } 
+    else if (keyDist <= placeDist) keyLoc else placeLoc
   }
 
   def nearestPlacesLocation(currLoc: Location): Option[Place] = {
