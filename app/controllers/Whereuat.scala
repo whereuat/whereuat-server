@@ -4,7 +4,6 @@ package controllers
 import play.api._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
-import play.api.libs.json.Reads._
 import play.api.mvc._
 
 // Scala imports
@@ -19,26 +18,12 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
 // whereu@ imports
+import utils.LocationFinder
+import utils.LocationFinder.{Location, Place}
 import utils.SmsVerificationSender
 
+
 class Whereuat extends Controller {
-  // Case classes for JsValues
-  case class Coordinates(latitude: Double, longitude: Double)
-  case class Location(name: Option[String], location: Coordinates)
-
-
-  // Implicit Reads for case classes
-  implicit val coordReads : Reads[Coordinates] = (
-    (JsPath \ "latitude").read[Double] and
-    (JsPath \ "longitude").read[Double]
-  )(Coordinates.apply _)
-
-  implicit val locationReads : Reads[Location] = (
-    (JsPath \ "name").readNullable[String] and
-    (JsPath \ "coordinates").read[Coordinates]
-  )(Location.apply _)
-
-
   // Explicit Reads
   val requestReads : Reads[String] = (
     (JsPath \ "phone-#").read[String]
@@ -55,23 +40,26 @@ class Whereuat extends Controller {
     (JsPath \ "to").read[String]
   ) tupled
 
-  val atReads : Reads[(String, String, Location)] = (
+  val atReads : Reads[(String, String, Location, Option[Place])] = (
     (JsPath \ "from").read[String] and
     (JsPath \ "to").read[String] and
-    (JsPath \ "location").read[Location]
+    (JsPath \ "current-location").read[Location] and
+    // Client also sends the nearest key location to the server. If none exists
+    // then the client sends a null.
+    (JsPath \ "key-location").readNullable[Place]
   ) tupled
 
 
   // Controller-scope values
   val db = MongoClient("localhost", 27017)("whereu@")
-  val gcmSender = new Sender(global.config.gcmApiKey)
+  val gcmSender = new Sender(global.config.googleApiKey)
 
 
   // Utility functions
   def phoneToGcm(phone: String) : String = {
     val query = MongoDBObject("phone-#" -> phone)
-    val gcmTok: String = db("clients").findOne(query).get("gcm-token") match {
-      case tok: String => tok
+    val gcmTok = db("client").findOne(query) match {
+      case Some(doc) => doc.get("gcm-token").toString
       case None => ""
     }
     gcmTok
@@ -119,7 +107,7 @@ class Whereuat extends Controller {
   // account. This request should receive the client's properly formatted phone
   // number, GCM ID, and verification code in the request body, make sure the
   // verification code matches the one stored in the verifiers collection, and
-  // then add them to the clients collection if it does.
+  // then add them to the client collection if it does.
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
       case (phone, gcm, vCode) =>
@@ -139,36 +127,59 @@ class Whereuat extends Controller {
     }
   }
 
+  // POST route for when a user sends an @request to another user. This route 
+  // should receive the client's properly formatted phone number and the phone
+  // number of their desired recipient, verify that the recipient exists in the
+  // database, then send the recipient a push notification
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
-        val toGcmTok = phoneToGcm(to)
-        val msg = new Message.Builder()
-          .addData("message", s"$from has sent you an @request")
-          .build()
-        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-        Ok(s"@ Request's from phone number: $from\n" +
-           s"@ Request's to phone number: $to")
+        phoneToGcm(to) match {
+          case "" =>
+            UnprocessableEntity("ERROR: " +
+              s"GCM token for $to not found in database")
+          case toGcmTok =>
+            val msg = new Message.Builder()
+              .addData("message", s"$from has sent you an @request")
+              .build()
+            gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
+            Ok(s"@ Request's from phone number: $from\n" +
+               s"@ Request's to phone number: $to")
+        }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
   }
 
+  // POST route for when a user responds to another user's @request. This route
+  // should receive the client's properly formatted phone number, current
+  // GPS coordinates, closest key location, and phone number of their desired
+  // recipient, then verify that the recipient exists in the database, and
+  // send the recipient a push notification
   def atRespond = Action(parse.json) { request =>
     request.body.validate(atReads).map {
-      case (from, to, loc) =>
-        val name_str = if (loc.name.isDefined) loc.name.get + " " else ""
-        val lat_str = f"${loc.location.latitude}%2.7f"
-        val long_str = f"${loc.location.longitude}%2.7f"
-
-        val toGcmTok = phoneToGcm(to)
-        val msg = new Message.Builder()
-          .addData("message", s"$from has responded to your @request")
-          .build()
-        gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-        Ok(s"@ Response's from phone number: $from\n" +
-           s"@ Response's to phone number: $to\n" +
-           s"@ Response's location: $name_str($lat_str,$long_str)")
+      case (from, to, currLoc, keyLoc) =>
+        val latStr = f"${currLoc.lat}%2.7f"
+        val longStr = f"${currLoc.lng}%2.7f"
+        LocationFinder.nearestLocation(currLoc, keyLoc) match {
+          case None =>
+            FailedDependency("ERROR: " +
+              s"Nearest location for ($latStr,$longStr) could not be found")
+          case Some(nearLoc) =>
+            phoneToGcm(to) match {
+              case "" =>
+                UnprocessableEntity("ERROR: " + 
+                  s"GCM token for $to not found in database")
+              case toGcmTok =>
+                val msg = new Message.Builder()
+                  .addData("message", s"$from is at ${nearLoc.name}")
+                  .build()
+                gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
+                Ok(s"@ Response's from phone number: $from\n" +
+                   s"@ Response's to phone number: $to\n" +
+                   s"@ Response's location: ($latStr,$longStr)")
+            }
+        }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
     }
