@@ -70,10 +70,7 @@ object LocationFinder {
     val nearestFuture: Future[Option[Place]] = response.map { res =>
       res.json.validate(placesReads).map {
         case p =>
-          if (p.places.length > 0) 
-            Some(p.places(0))
-          else
-            None
+          if (p.places.length > 0) Some (p.places(0)) else None
       }.recoverTotal {
         e => None
       }
