@@ -58,7 +58,7 @@ class Whereuat extends Controller {
   // Utility functions
   def phoneToGcm(phone: String) : String = {
     val query = MongoDBObject("phone-#" -> phone)
-    val gcmTok = db("client").findOne(query) match {
+    val gcmTok = db("clients").findOne(query) match {
       case Some(doc) => doc.get("gcm-token").toString
       case None => ""
     }
@@ -107,7 +107,7 @@ class Whereuat extends Controller {
   // account. This request should receive the client's properly formatted phone
   // number, GCM ID, and verification code in the request body, make sure the
   // verification code matches the one stored in the verifiers collection, and
-  // then add them to the client collection if it does.
+  // then add them to the clients collection if it does.
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
       case (phone, gcm, vCode) =>
@@ -116,7 +116,7 @@ class Whereuat extends Controller {
           val client = MongoDBObject("gcm-token" -> gcm, "phone-#" -> phone)
           // Update with an upsert rather than insert in order to handle a
           // client needing to create their account.
-          db("client").update(query, client, upsert=true)
+          db("clients").update(query, client, upsert=true)
           Ok(s"Created account for phone number $phone\n")
         } else {
           InternalServerError("VERIFICATION ERROR: Verification codes do not " +
