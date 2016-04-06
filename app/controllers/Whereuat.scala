@@ -140,7 +140,7 @@ class Whereuat extends Controller {
               s"GCM token for $to not found in database")
           case toGcmTok =>
             val msg = new Message.Builder()
-              .addData("message", s"$from has sent you an @request")
+              .addData("from-#", s"$from")
               .build()
             gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
             Ok(s"@ Request's from phone number: $from\n" +
