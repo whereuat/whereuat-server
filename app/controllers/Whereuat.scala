@@ -145,6 +145,7 @@ class Whereuat extends Controller {
               .clickAction("REQUEST_LOCATION_CATEGORY")
               .build()
             val msg = new Message.Builder()
+              .addData("from-#", s"$from")
               .notification(notification)
               .build()
             gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
