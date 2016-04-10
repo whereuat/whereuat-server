@@ -146,6 +146,7 @@ class Whereuat extends Controller {
               .build()
             val msg = new Message.Builder()
               .addData("from-#", s"$from")
+              .addData(global.NOTIFICATION_TYPE, global.AT_REQUEST_NOTIFICATION)
               .notification(notification)
               .build()
             gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
@@ -179,6 +180,8 @@ class Whereuat extends Controller {
               case toGcmTok =>
                 val msg = new Message.Builder()
                   .addData("message", s"$from is at ${nearLoc.name}")
+                  .addData(global.NOTIFICATION_TYPE,
+                           global.AT_RESPONSE_NOTIFICATION)
                   .build()
                 gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
                 Ok(s"@ Response's from phone number: $from\n" +

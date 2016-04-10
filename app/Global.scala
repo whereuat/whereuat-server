@@ -17,4 +17,8 @@ object Global extends GlobalSettings {
 package object global {
   val config = Config
   val GCM_RETRIES = 5
+
+  val NOTIFICATION_TYPE = "NOTIFICATION_TYPE"
+  val AT_REQUEST_NOTIFICATION = "AT_REQUEST_NOTIFICATION"
+  val AT_RESPONSE_NOTIFICATION = "AT_RESPONSE_NOTIFICATION"
 }
