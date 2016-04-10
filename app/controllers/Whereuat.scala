@@ -13,7 +13,7 @@ import scala.util.Random
 import java.util.Date
 
 // Third-party imports
-import com.google.android.gcm.server.{Sender, Message}
+import com.google.android.gcm.server.{Sender, Message, Notification}
 import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
@@ -127,7 +127,7 @@ class Whereuat extends Controller {
     }
   }
 
-  // POST route for when a user sends an @request to another user. This route 
+  // POST route for when a user sends an @request to another user. This route
   // should receive the client's properly formatted phone number and the phone
   // number of their desired recipient, verify that the recipient exists in the
   // database, then send the recipient a push notification
@@ -139,8 +139,14 @@ class Whereuat extends Controller {
             UnprocessableEntity("ERROR: " +
               s"GCM token for $to not found in database")
           case toGcmTok =>
+            val notification = new Notification.Builder("whereu@")
+              .body(s"Location Request from $from")
+              .title(s"whereu@")
+              .clickAction("REQUEST_LOCATION_CATEGORY")
+              .build()
             val msg = new Message.Builder()
               .addData("from-#", s"$from")
+              .notification(notification)
               .build()
             gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
             Ok(s"@ Request's from phone number: $from\n" +
@@ -168,7 +174,7 @@ class Whereuat extends Controller {
           case Some(nearLoc) =>
             phoneToGcm(to) match {
               case "" =>
-                UnprocessableEntity("ERROR: " + 
+                UnprocessableEntity("ERROR: " +
                   s"GCM token for $to not found in database")
               case toGcmTok =>
                 val msg = new Message.Builder()
