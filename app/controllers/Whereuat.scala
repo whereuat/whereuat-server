@@ -117,6 +117,7 @@ class Whereuat extends Controller {
           // Update with an upsert rather than insert in order to handle a
           // client needing to create their account.
           db("clients").update(query, client, upsert=true)
+          db("verifiers").remove(query)
           Ok(s"Created account for phone number $phone\n")
         } else {
           InternalServerError("VERIFICATION ERROR: Verification codes do not " +
