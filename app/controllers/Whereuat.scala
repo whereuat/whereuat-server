@@ -13,7 +13,6 @@ import scala.util.Random
 import java.util.Date
 
 // Third-party imports
-import com.google.android.gcm.server.{Sender, Message, Notification}
 import com.mongodb.casbah.Imports._
 import com.mongodb.util.JSON._
 
@@ -21,6 +20,7 @@ import com.mongodb.util.JSON._
 import utils.LocationFinder
 import utils.LocationFinder.{Location, Place}
 import utils.SmsVerificationSender
+import utils.GcmSender
 
 
 class Whereuat extends Controller {
@@ -29,10 +29,11 @@ class Whereuat extends Controller {
     (JsPath \ "phone-#").read[String]
   )
 
-  val createReads : Reads[(String, String, String)] = (
+  val createReads : Reads[(String, String, String, String)] = (
     (JsPath \ "phone-#").read[String] and
     (JsPath \ "gcm-token").read[String] and
-    (JsPath \ "verification-code").read[String]
+    (JsPath \ "verification-code").read[String] and
+    (JsPath \ "client-os").read[String]
   ) tupled
 
   val whereReads : Reads[(String, String)] = (
@@ -52,19 +53,8 @@ class Whereuat extends Controller {
 
   // Controller-scope values
   val db = MongoClient("localhost", 27017)("whereu@")
-  val gcmSender = new Sender(global.config.googleApiKey)
-
 
   // Utility functions
-  def phoneToGcm(phone: String) : String = {
-    val query = MongoDBObject("phone-#" -> phone)
-    val gcmTok = db("clients").findOne(query) match {
-      case Some(doc) => doc.get("gcm-token").toString
-      case None => ""
-    }
-    gcmTok
-  }
-
   // Creates a random string of 5 integers.
   def genVerificationCode(): String = {
     (for (x <- 1 to 5) yield Random.nextInt(10)) take 5 mkString
@@ -75,6 +65,11 @@ class Whereuat extends Controller {
   def isVerified(phone: String, vCode: String): Boolean = {
     val query = MongoDBObject("phone-#" -> phone, "verification-code" -> vCode)
     db("verifiers").findOne(query) != None
+  }
+
+  // Returns true if the given OS _os_ is a valid OS type
+  def isValidOs(os: String): Boolean = {
+    os == global.OS_IOS || os == global.OS_ANDROID
   }
 
 
@@ -110,18 +105,24 @@ class Whereuat extends Controller {
   // then add them to the clients collection if it does.
   def createAccount = Action(parse.json) { request =>
     request.body.validate(createReads).map {
-      case (phone, gcm, vCode) =>
-        if (isVerified(phone, vCode)) {
+      case (phone, gcm, vCode, os) =>
+        val verified = isVerified(phone, vCode)
+        val valid_os = isValidOs(os)
+        if (verified && valid_os) {
           val query = MongoDBObject("phone-#" -> phone)
-          val client = MongoDBObject("gcm-token" -> gcm, "phone-#" -> phone)
+          val client = MongoDBObject("gcm-token" -> gcm, 
+                                     "phone-#" -> phone, 
+                                     "client-os" -> os)
           // Update with an upsert rather than insert in order to handle a
           // client needing to create their account.
           db("clients").update(query, client, upsert=true)
           db("verifiers").remove(query)
           Ok(s"Created account for phone number $phone\n")
-        } else {
+        } else if (!verified) {
           InternalServerError("VERIFICATION ERROR: Verification codes do not " +
                               "match\n")
+        } else {
+          BadRequest("JSON ERROR: Invalid OS\n")
         }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
@@ -135,23 +136,13 @@ class Whereuat extends Controller {
   def atRequest = Action(parse.json) { request =>
     request.body.validate(whereReads).map {
       case (from, to) =>
-        phoneToGcm(to) match {
-          case "" =>
-            UnprocessableEntity("ERROR: " +
-              s"GCM token for $to not found in database")
-          case toGcmTok =>
-            val notification = new Notification.Builder("whereu@")
-              .body(s"Location Request from $from")
-              .title(s"whereu@")
-              .clickAction("REQUEST_LOCATION_CATEGORY")
-              .build()
-            val msg = new Message.Builder()
-              .addData("from-#", s"$from")
-              .notification(notification)
-              .build()
-            gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-            Ok(s"@ Request's from phone number: $from\n" +
-               s"@ Request's to phone number: $to")
+        try {
+          GcmSender.sendAtRequestNotif(from, to)
+          Ok(s"@ Request's from phone number: $from\n" +
+             s"@ Request's to phone number: $to")
+        } catch {
+          case e: GcmSender.TokenNotFoundException =>
+            UnprocessableEntity(s"ERROR: $to not found in database")
         }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
@@ -173,18 +164,14 @@ class Whereuat extends Controller {
             FailedDependency("ERROR: " +
               s"Nearest location for ($latStr,$longStr) could not be found")
           case Some(nearLoc) =>
-            phoneToGcm(to) match {
-              case "" =>
-                UnprocessableEntity("ERROR: " +
-                  s"GCM token for $to not found in database")
-              case toGcmTok =>
-                val msg = new Message.Builder()
-                  .addData("message", s"$from is at ${nearLoc.name}")
-                  .build()
-                gcmSender.send(msg, toGcmTok, global.GCM_RETRIES)
-                Ok(s"@ Response's from phone number: $from\n" +
-                   s"@ Response's to phone number: $to\n" +
-                   s"@ Response's location: ($latStr,$longStr)")
+            try {
+              GcmSender.sendAtRespondNotif(from, to, nearLoc.name)
+              Ok(s"@ Response's from phone number: $from\n" +
+                 s"@ Response's to phone number: $to\n" +
+                 s"@ Response's location: ${nearLoc.name}")
+            } catch {
+              case e: GcmSender.TokenNotFoundException =>
+                UnprocessableEntity(s"ERROR: $to not found in database")
             }
         }
     }.recoverTotal {
