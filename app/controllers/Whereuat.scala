@@ -15,7 +15,6 @@ import java.util.Date
 // Third-party imports
 import com.google.android.gcm.server.{Sender, Message, Notification}
 import com.mongodb.casbah.Imports._
-import com.mongodb.util.JSON._
 
 // whereu@ imports
 import utils.LocationFinder
