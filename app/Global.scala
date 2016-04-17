@@ -17,4 +17,6 @@ object Global extends GlobalSettings {
 package object global {
   val config = Config
   val GCM_RETRIES = 5
+  val OS_IOS = "IOS"
+  val OS_ANDROID = "ANDROID"
 }
