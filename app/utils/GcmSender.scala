@@ -24,7 +24,8 @@ object GcmSender {
       if (os == global.OS_IOS) {
         builder.contentAvailable(true)
       }
-      builder.addData("from-#", s"$from")
+      builder.addData("type", s"${global.GCM_TYPE_REQUEST}")
+             .addData("from-#", s"$from")
              .build()
     }
   }
@@ -42,7 +43,8 @@ object GcmSender {
       if (os == global.OS_IOS) {
         builder.contentAvailable(true)
       }
-      builder.addData("from-#", s"$from")
+      builder.addData("type", s"${global.GCM_TYPE_RESPONSE}")
+             .addData("from-#", s"$from")
              .addData("place", s"$place")
              .build()
     }
