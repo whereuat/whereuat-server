@@ -35,7 +35,6 @@ object GcmSender {
   }
 
   // Sends GCM messages for the atRespond route
-  // TODO: Implement this
   private class AtRespond(var to: String, from: String,
                           place: String) extends GcmMsg {
     def getMsg(os: String) : Message = {
@@ -43,7 +42,9 @@ object GcmSender {
       if (os == global.OS_IOS) {
         builder.contentAvailable(true)
       }
-      builder.build()
+      builder.addData("from-#", s"$from")
+             .addData("place", s"$place")
+             .build()
     }
   }
   private object AtRespond {
