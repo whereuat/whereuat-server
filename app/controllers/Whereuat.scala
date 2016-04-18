@@ -50,9 +50,6 @@ class Whereuat extends Controller {
   ) tupled
 
 
-  // Controller-scope values
-  val db = MongoClient("localhost", 27017)("whereu@")
-
   // Utility functions
   // Creates a random string of 5 integers.
   def genVerificationCode(): String = {
@@ -63,7 +60,7 @@ class Whereuat extends Controller {
   // and the verification code _vCode_ matches the one in the collection.
   def isVerified(phone: String, vCode: String): Boolean = {
     val query = MongoDBObject("phone-#" -> phone, "verification-code" -> vCode)
-    db("verifiers").findOne(query) != None
+    global.db("verifiers").findOne(query) != None
   }
 
   // Returns true if the given OS _os_ is a valid OS type
@@ -88,7 +85,7 @@ class Whereuat extends Controller {
         // Update with an upsert because the verifier should overwrite an
         // existing one for the same phone number and create a new one if one
         // doesn't exist.
-        db("verifiers").update(query, verifier, upsert=true)
+        global.db("verifiers").update(query, verifier, upsert=true)
 
         SmsVerificationSender.send(phone, vCode)
         Ok(s"Created verifier for phone number $phone")
@@ -114,8 +111,8 @@ class Whereuat extends Controller {
                                      "client-os" -> os)
           // Update with an upsert rather than insert in order to handle a
           // client needing to create their account.
-          db("clients").update(query, client, upsert=true)
-          db("verifiers").remove(query)
+          global.db("clients").update(query, client, upsert=true)
+          global.db("verifiers").remove(query)
           Ok(s"Created account for phone number $phone\n")
         } else if (!verified) {
           InternalServerError("VERIFICATION ERROR: Verification codes do not " +
