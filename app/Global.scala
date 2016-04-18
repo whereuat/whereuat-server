@@ -16,7 +16,11 @@ object Global extends GlobalSettings {
 
 package object global {
   val config = Config
+
   val GCM_RETRIES = 5
+  val GCM_TYPE_REQUEST = "AT_REQUEST"
+  val GCM_TYPE_RESPONSE = "AT_RESPONSE"
+
   val OS_IOS = "IOS"
   val OS_ANDROID = "ANDROID"
 }
