@@ -2,7 +2,7 @@ package utils
 
 import play.api.mvc._
 
-import com.google.android.gcm.server.{Sender, Message, Notification}
+import com.google.android.gcm.server.{Sender, Message}
 import com.mongodb.casbah.Imports._
 
 object GcmSender {
@@ -13,29 +13,19 @@ object GcmSender {
   private trait GcmMsg {
     // Recipient phone number
     var to : String
-    // Method for retrieving iOS version of push notification
-    def getIosMsg() : Message
-    // Method for retrieving Android version of push notification
-    def getAndroidMsg() : Message
+    // Method for retrieving push notification
+    def getMsg(os: String) : Message
   }
 
   // Sends GCM messages for the atRequest route
   private class AtRequest(var to: String, from: String) extends GcmMsg {
-    def getIosMsg() : Message = {
-      val notification = new Notification.Builder("whereu@")
-        .body(s"Location Request from $from")
-        .title(s"whereu@")
-        .clickAction("REQUEST_LOCATION_CATEGORY")
-        .build()
-      new Message.Builder()
-        .notification(notification)
-        .build()
-    }
-
-    def getAndroidMsg() : Message = {
-      new Message.Builder()
-        .addData("from-#", s"$from")
-        .build()
+    def getMsg(os: String) : Message = {
+      val builder = new Message.Builder()
+      if (os == global.OS_IOS) {
+        builder.contentAvailable(true)
+      }
+      builder.addData("from-#", s"$from")
+             .build()
     }
   }
   private object AtRequest {
@@ -46,17 +36,14 @@ object GcmSender {
 
   // Sends GCM messages for the atRespond route
   // TODO: Implement this
-  private class AtRespond(var to: String, from: String, 
+  private class AtRespond(var to: String, from: String,
                           place: String) extends GcmMsg {
-    def getIosMsg() : Message = {
-      new Message.Builder()
-        .build()
-    }
-
-    def getAndroidMsg() : Message = {
-      new Message.Builder()
-        .addData("message", s"$from is at $place")
-        .build()
+    def getMsg(os: String) : Message = {
+      val builder = new Message.Builder()
+      if (os == global.OS_IOS) {
+        builder.contentAvailable(true)
+      }
+      builder.build()
     }
   }
   private object AtRespond {
@@ -83,17 +70,9 @@ object GcmSender {
     db("clients").findOne(query) match {
       case Some(doc) =>
         val gcmTok = doc.get("gcm-token").toString
-        val os = doc.get("client-os").toString
-
-        val gcm_msg = os match {
-          case global.OS_IOS =>
-            msg.getIosMsg()
-          case global.OS_ANDROID =>
-            msg.getAndroidMsg()
-        }
+        val gcm_msg = msg.getMsg(doc.get("client-os").toString)
         gcmSender.send(gcm_msg, gcmTok, global.GCM_RETRIES)
       case None => throw TokenNotFoundException()
     }
   }
 }
-
