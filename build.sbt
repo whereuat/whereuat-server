@@ -11,7 +11,10 @@ libraryDependencies ++= Seq(
   cache,
   ws,
   specs2 % Test,
-  "com.google.gcm" % "gcm-server" % "1.0.0",
+  // The stable release does not currently support content-available,
+  // so we are building it locally until they do so. The current stable
+  // release can be included as so:
+  // "com.google.gcm" % "gcm-server" % "1.0.0",
   "com.twilio.sdk" % "twilio-java-sdk" % "3.4.5",
   "org.mongodb" %% "casbah" % "3.1.0",
   "org.yaml" % "snakeyaml" % "1.17"
