@@ -54,6 +54,7 @@ object GcmSender {
   }
 
   case class TokenNotFoundException() extends Exception
+  case class GcmSendFailedException() extends Exception
 
   // Public method to send push notifications for the atRequest route
   def sendAtRequestNotif(from: String, to: String) : Unit = {
@@ -72,7 +73,11 @@ object GcmSender {
       case Some(doc) =>
         val gcmTok = doc.get("gcm-token").toString
         val gcm_msg = msg.getMsg(doc.get("client-os").toString)
-        gcmSender.send(gcm_msg, gcmTok, global.GCM_RETRIES)
+        try {
+          gcmSender.send(gcm_msg, gcmTok, global.GCM_RETRIES)
+        } catch {
+          case e: IOException => throw new GcmSendFailedException()
+        }
       case None => throw TokenNotFoundException()
     }
   }
