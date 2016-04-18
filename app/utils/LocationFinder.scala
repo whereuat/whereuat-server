@@ -7,7 +7,6 @@ import play.api.Play.current
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
-import scala.math._
 import scala.util.{Success, Failure}
 
 object LocationFinder {
@@ -37,9 +36,20 @@ object LocationFinder {
   implicit val context = scala.concurrent.ExecutionContext.Implicits.global
 
 
-  // Find Euclidean distance between two GPS coordinates
+  // Find haversine distance between two GPS coordinates
   def dist(a: Location, b: Location): Double = {
-    sqrt(pow(a.lat - b.lat, 2) + pow(a.lng - b.lng, 2))
+    val a_lat_rad = Math.toRadians(a.lat)
+    val a_lng_rad = Math.toRadians(a.lng)
+
+    val b_lat_rad = Math.toRadians(b.lat)
+    val b_lng_rad = Math.toRadians(b.lng)
+
+    val haversine = (theta: Double) => (1 - Math.cos(theta))/2
+
+    2 * global.EARTH_RADIUS * Math.asin(Math.sqrt(
+      haversine(a_lat_rad - b_lat_rad) +
+      Math.cos(a_lat_rad)*Math.cos(b_lat_rad)*haversine(a_lng_rad - b_lng_rad)
+    ))
   }
 
   // Find the nearest location to the given current location, given the nearest
@@ -47,7 +57,7 @@ object LocationFinder {
   def nearestLocation(currLoc: Location, 
                       keyLoc: Option[Place] = None): Option[Place] = {
     val placeLoc = nearestPlacesLocation(currLoc)
-    var placeDist = if (placeLoc isDefined) dist(currLoc, placeLoc.get.location) 
+    var placeDist = if (placeLoc isDefined) dist(currLoc, placeLoc.get.location)
                     else Double.MaxValue
     var keyDist = if (keyLoc isDefined) dist(currLoc, keyLoc.get.location)
                   else Double.MaxValue

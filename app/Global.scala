@@ -19,4 +19,5 @@ package object global {
   val GCM_RETRIES = 5
   val OS_IOS = "IOS"
   val OS_ANDROID = "ANDROID"
+  val EARTH_RADIUS = 6371
 }
