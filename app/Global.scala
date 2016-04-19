@@ -23,4 +23,5 @@ package object global {
 
   val OS_IOS = "IOS"
   val OS_ANDROID = "ANDROID"
+  val EARTH_RADIUS = 6371
 }
