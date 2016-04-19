@@ -139,8 +139,6 @@ class Whereuat extends Controller {
         } catch {
           case e: GcmSender.TokenNotFoundException =>
             UnprocessableEntity(s"ERROR: $to not found in database")
-          case e: GcmSender.GcmSendFailedException =>
-            FailedDependency("ERROR: GCM notification send failed")
         }
     }.recoverTotal {
       e => BadRequest("ERROR: " + JsError.toJson(e))
@@ -170,8 +168,6 @@ class Whereuat extends Controller {
             } catch {
               case e: GcmSender.TokenNotFoundException =>
                 UnprocessableEntity(s"ERROR: $to not found in database")
-              case e: GcmSender.GcmSendFailedException =>
-                FailedDependency("ERROR: GCM notification send failed")
             }
         }
     }.recoverTotal {
