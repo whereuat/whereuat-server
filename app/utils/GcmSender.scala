@@ -6,7 +6,6 @@ import com.google.android.gcm.server.{Sender, Message}
 import com.mongodb.casbah.Imports._
 
 object GcmSender {
-  private val db = MongoClient("localhost", 27017)("whereu@")
   private val gcmSender = new Sender(global.config.googleApiKey)
 
   // Parent trait for implementing a message class
@@ -71,7 +70,7 @@ object GcmSender {
   // Workhorse method for sending the push notification
   private def sendNotif(msg: GcmMsg) : Unit = {
     val query = MongoDBObject("phone-#" -> msg.to)
-    db("clients").findOne(query) match {
+    global.db("clients").findOne(query) match {
       case Some(doc) =>
         val gcmTok = doc.get("gcm-token").toString
         val gcm_msg = msg.getMsg(doc.get("client-os").toString)
