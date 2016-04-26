@@ -8,6 +8,7 @@ import java.util.LinkedHashMap
 
 import org.yaml.snakeyaml.Yaml
 
+// Utility singleton to read and store the values from the config file
 object Config {
   private val configFilename: String = "conf/config.yml"
   private var configMap = Map[String, String]()
@@ -29,12 +30,14 @@ object Config {
     }
   }
 
+  // High-level getters
   def twilioAccountSid() = { configGetter("twilio-account-sid") }
   def twilioAuthToken() = { configGetter("twilio-auth-token") }
   def twilioNumber() = { configGetter("twilio-number") }
 
   def googleApiKey() = { configGetter("google-api-key") }
 
+  // Workhorse method to get a specific config variable from its key
   private def configGetter(key: String): String = {
     configMap get key match {
       case Some(value) => value

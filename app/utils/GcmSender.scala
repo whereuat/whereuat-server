@@ -5,6 +5,8 @@ import play.api.mvc._
 import com.google.android.gcm.server.{Sender, Message}
 import com.mongodb.casbah.Imports._
 
+// Singleton object to send GCM messages in the correct format to the two
+// client OS's
 object GcmSender {
   private val gcmSender = new Sender(global.config.googleApiKey)
 
