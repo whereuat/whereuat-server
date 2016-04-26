@@ -9,7 +9,9 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.util.{Success, Failure}
 
+// Singleton object for finding the nearest location to a point
 object LocationFinder {
+  // Utility case classes used for pattern matching
   case class Location(lat: Double, lng: Double)
   case class Place(name: String, location: Location)
   case class Places(places: Seq[Place])
@@ -37,6 +39,11 @@ object LocationFinder {
 
 
   // Find haversine distance between two GPS coordinates
+  // Haversine is used to find distance over the surface of the Earth
+  // approximated as a sphere. A naive Euclidean distance implementation would
+  // produce significant error near the poles, even as far south as England,
+  // where a degree of longitude is 1.5 times larger than a degree of latitude
+  // in terms of distance
   def dist(a: Location, b: Location): Double = {
     val a_lat_rad = Math.toRadians(a.lat)
     val a_lng_rad = Math.toRadians(a.lng)
@@ -68,7 +75,9 @@ object LocationFinder {
     else if (keyDist <= placeDist) keyLoc else placeLoc
   }
 
+  // Find the nearest location given by the Places API
   def nearestPlacesLocation(currLoc: Location): Option[Place] = {
+    // Initiate the GET request to the Places API server and get the response
     val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
     val locString = f"${currLoc.lat}%2.6f,${currLoc.lng}%2.6f"
     val response = WS.url(url)
@@ -77,6 +86,8 @@ object LocationFinder {
       .withQueryString("rankby" -> "distance")
       .withQueryString("type" -> "establishment")
       .get()
+
+    // Build an Option[Place] from the API server's response
     val nearestFuture: Future[Option[Place]] = response.map { res =>
       res.json.validate(placesReads).map {
         case p =>

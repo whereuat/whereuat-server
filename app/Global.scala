@@ -13,15 +13,21 @@ object Global extends GlobalSettings {
   }
 }
 
+// global object to store app globals
 package object global {
+  // App utility globals
   val config = Config
   val db = MongoClient("localhost", 27017)("whereu@")
 
+  // GCM-related constants
   val GCM_RETRIES = 5
   val GCM_TYPE_REQUEST = "AT_REQUEST"
   val GCM_TYPE_RESPONSE = "AT_RESPONSE"
 
+  // JSON argument globals
   val OS_IOS = "IOS"
   val OS_ANDROID = "ANDROID"
+
+  // Miscellaneous globals
   val EARTH_RADIUS = 6371
 }

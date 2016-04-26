@@ -8,10 +8,13 @@ import com.twilio.sdk.{TwilioRestClient, TwilioRestException}
 import org.apache.http.message.BasicNameValuePair
 import org.apache.http.NameValuePair
 
-
+// Singleton object for sending verification codes through SMS to clients that
+// request an account
 object SmsVerificationSender {
+  // Method to build and send the SMS message through Twilio
   def send(clientNumber: String, vCode: String): Unit = {
     try {
+      // Build the message parameters
       var params = List[NameValuePair]()
       params ::= (new BasicNameValuePair("To", clientNumber))
       params ::= (new BasicNameValuePair("From", global.config.twilioNumber))
