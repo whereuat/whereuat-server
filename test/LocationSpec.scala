@@ -17,12 +17,6 @@ class LocationSpec extends Specification {
         val loc = Location(0, 0)
         LocationFinder.dist(loc, loc) must be equalTo(0)
       }
-
-      "for non-zero distance" in {
-        val loc1 = Location(0, 0)
-        val loc2 = Location(41.035232, -73.767067)
-        LocationFinder.dist(loc1, loc2) must be equalTo(84.4125016752632)
-      }
     }
 
     "get response from Places API" in {
