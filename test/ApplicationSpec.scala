@@ -27,13 +27,13 @@ class ApplicationSpec extends Specification {
 
       "location request" in new WithApplication {
         route(
-          FakeRequest(POST, "/at")
+          FakeRequest(POST, "/where")
         ) must not (beSome.which (status(_) == NOT_FOUND))
       }
 
       "location respond" in new WithApplication {
         route(
-          FakeRequest(POST, "/where")
+          FakeRequest(POST, "/at")
         ) must not (beSome.which (status(_) == NOT_FOUND))
       }
     }
