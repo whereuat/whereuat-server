@@ -70,6 +70,14 @@ class Whereuat extends Controller {
 
 
   // Route actions
+  def index = Action {
+    Ok(views.html.index())
+  }
+
+  def team = Action {
+    Ok(views.html.team())
+  }
+
   // POST route for when a client wants to initially create an account. This
   // request should receive the client's properly formatted phone number in the
   // request body, create a verification code and add it to the verifiers

@@ -1,0 +1,19 @@
+@main(title="whereuat") {
+<div class="banner">
+  <img id="logo-banner" src='@routes.Assets.versioned("images/logo.png")'>
+  <p id="slogan">Finally, a useable app to find where your friends are.</p>
+</div>
+
+<div class="row">
+  @card("aa-card", "AA", "Android App", "fa-android",
+    "assets/whereuat.apk")
+  @card("ia-card", "IA", "iOS App", "fa-apple",
+    "https://itunes.apple.com/us/genre/ios/id36?mt=8")
+</div>
+
+<div class="row">
+  @card("gh-card", "GH", "GitHub", "fa-github",
+    "https://github.com/whereuat/")
+  @card("ot-card", "OT", "Our Team", "fa-group", "/team")
+</div>
+}

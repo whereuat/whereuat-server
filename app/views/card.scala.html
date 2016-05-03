@@ -1,0 +1,15 @@
+@(id: String, initials: String, text: String, fa_icon: String, link: String)
+<div id=@id class="six columns">
+  <div class="card-container">
+    <div class="card">
+      <div class="front card-side">
+        <span class="card-initials">@initials</span>
+        <span class="card-text">@text</span>
+      </div>
+
+      <div class="back card-side">
+        <a href="@link"><i class="fa @fa_icon"></i></a>
+      </div>
+    </div>
+  </div>
+</div>

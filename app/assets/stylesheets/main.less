@@ -1,0 +1,226 @@
+@import (reference) "mixins.less";
+
+@aa-color: #2B6F82;
+@ia-color: #369AA1;
+@gh-color: #A84538;
+@ot-color: #3E55BB;
+
+@cool-red: #F15369;
+@light-gray: #F8F7F3;
+@dark-gray: #979797;
+@off-black: #101820;
+@off-white: #FAFAFA;
+
+@footer-offset: 3em;
+
+/* General styling for the whole site.
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+html, body {
+  height: 100%;
+  background-color: @off-white;
+  font-family: Lato;
+}
+
+.row {
+  width: 50%; // Only applied when the screen is small.
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.banner {
+  text-align: center;
+  padding-top: 5%;
+}
+
+footer {
+  color: @dark-gray;
+  text-align: right;
+  padding-right: 5%;
+}
+
+footer, .push {
+  height: @footer-offset;
+}
+
+// Overrides the skeleton CSS that accounts for a margin, which we don't want.
+.six.columns {
+  width: 50%;
+}
+
+/* Styling for the main page.
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.container {
+  width: 100%;
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin: 0 auto -@footer-offset;
+}
+
+.card-side {
+  width: 100%;
+  height: 100%;
+}
+
+.card-container {
+  position: relative;
+  top: 0; bottom: 0; left: 0; right: 0;
+  padding-bottom: 100%;
+  font-size: 12vw
+}
+
+.columns {
+  margin: 0;
+}
+
+.card {
+  position: absolute;
+  top: 0; bottom: 0; left: 0; right: 0;
+}
+
+.card-initials {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 100%;
+  color: @off-white;
+}
+
+.card-text {
+  @size: 25%;
+
+  position: absolute;
+  color: @off-white;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  font-size: @size;
+  padding-bottom: @size/4;
+}
+
+.back i {
+  position: absolute;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  top: 50%;
+  .transform-translateY(-50%);
+  font-size: 100%;
+  color: @dark-gray;
+}
+
+#logo-banner {
+  max-width: 33%;
+}
+
+#slogan {
+  color: @dark-gray;
+  text-align: center;
+}
+
+#aa-card .front { background-color: @aa-color; }
+#ia-card .front { background-color: @ia-color; }
+#gh-card .front { background-color: @gh-color; }
+#ot-card .front { background-color: @ot-color; }
+
+
+/* Styling specifically for card flipping.
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+.card-container {
+  .perspective(1000);
+}
+
+.card-container.flip .card {
+  .transform-rotateY(180deg);
+}
+
+.card {
+  .transition(1s);
+  .transform-style(preserve-3d);
+}
+
+// Hide the back of the pane during the swap.
+.front, .back {
+  .backface-visibility(hidden);
+  position: absolute;
+}
+
+.front {
+  z-index: 2;
+  .transform-rotateY(0deg);
+}
+
+.back {
+  .transform-rotateY(180deg);
+}
+
+/* Teams page styling.
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+#ourteam {
+  text-align: center;
+  max-width: 75%; // Only applied when the screen is small.
+  margin-bottom: 3%;
+}
+
+.m8-bio {
+  width: 60%; // Only applied when the screen is small.
+  margin-bottom: 7%;
+}
+
+.m8-pic {
+  width: 100%;
+  margin-bottom: 3%;
+}
+
+.m8-info {
+  float: left;
+  overflow: hidden;
+  height: 100%;
+  position: relative;
+  line-height: 1.2;
+}
+
+.m8-info > span {
+  width: 100%;
+  display: block;
+}
+
+.m8-name {
+  color: @cool-red;
+  font-weight: bold;
+}
+
+.m8-name, .m8-roles {
+  margin-bottom: 4%;
+}
+
+.m8-roles, .m8-interests {
+  color: @dark-gray;
+}
+
+/* These attributes should be applied when the screen is big.
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+@media (min-width: 550px) {
+  .card-container {
+    font-size: 6.25vw
+  }
+
+  .m8-bio {
+    width: 40%;
+    display: flex;
+    margin-bottom: 3%;
+  }
+
+  .m8-info {
+    margin-left: 3%;
+  }
+
+  #ourteam {
+    max-width: 50%;
+  }
+
+  .row {
+    width: 25%;
+  }
+}
