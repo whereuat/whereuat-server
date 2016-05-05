@@ -1,0 +1,28 @@
+@(title: String)(content: Html)
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>@title</title>
+    <meta name="viewport" content="width=device-width" />
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.versioned("images/favicon.png")"/>
+    <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/normalize.css")"/>
+    <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/skeleton.css")"/>
+    <link rel="stylesheet" href="@routes.Assets.versioned("stylesheets/main.css")"/>
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+
+    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/index.js")'></script>
+  </head>
+  <body>
+    <div class="container">
+      @content
+      <div class="push"></div>
+    </div>
+
+    <footer>
+      &copy; 2016 <span>whereu@@</span>. All rights reserved.
+    </footer>
+  </body>
+</html>
