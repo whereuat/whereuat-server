@@ -7,6 +7,8 @@ import play.api.mvc._
 import com.google.android.gcm.server.{Sender, Message}
 import com.mongodb.casbah.Imports._
 
+import LocationFinder.Place
+
 // Singleton object to send GCM messages in the correct format to the two
 // client OS's
 object GcmSender {
@@ -40,7 +42,7 @@ object GcmSender {
 
   // Sends GCM messages for the atRespond route
   private class AtRespond(var to: String, from: String,
-                          place: String) extends GcmMsg {
+                          place: Place) extends GcmMsg {
     def getMsg(os: String) : Message = {
       val builder = new Message.Builder()
       if (os == global.OS_IOS) {
@@ -48,12 +50,14 @@ object GcmSender {
       }
       builder.addData("type", s"${global.GCM_TYPE_RESPONSE}")
              .addData("from-#", s"$from")
-             .addData("place", s"$place")
+             .addData("place", s"${place.name}")
+             .addData("lat", f"${place.location.lat}%2.6f")
+             .addData("lng", f"${place.location.lng}%2.6f")
              .build()
     }
   }
   private object AtRespond {
-    def apply(to: String, from: String, place: String) = {
+    def apply(to: String, from: String, place: Place) = {
       new AtRespond(to, from, place)
     }
   }
@@ -67,7 +71,7 @@ object GcmSender {
   }
 
   // Public method to send push notifications for the atRespond route
-  def sendAtRespondNotif(from: String, to: String, place: String) : Unit = {
+  def sendAtRespondNotif(from: String, to: String, place: Place) : Unit = {
     sendNotif(AtRespond(to, from, place))
   }
 
