@@ -171,7 +171,7 @@ class Whereuat extends Controller {
               s"Nearest location for ($latStr,$longStr) could not be found")
           case Some(nearLoc) =>
             try {
-              GcmSender.sendAtRespondNotif(from, to, nearLoc.name)
+              GcmSender.sendAtRespondNotif(from, to, nearLoc)
               Ok(s"@ Response's from phone number: $from\n" +
                  s"@ Response's to phone number: $to\n" +
                  s"@ Response's location: ${nearLoc.name}")
